@@ -1,0 +1,23 @@
+{
+  "file": "01_straight.step",
+  "synthetic": true,
+  "description": "One straight pipe, ID 12 mm, OD 16 mm, 500 mm long.",
+  "length_unit_in_file": "mm",
+  "topology": "line",
+  "component_count": 1,
+  "ordered": true,
+  "components": [
+    {
+      "type": "pipe",
+      "part": "pipe",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.5
+    }
+  ],
+  "edges": [],
+  "total_pipe_length_m": 0.5,
+  "total_flow_length_m": 0.5,
+  "warnings_contain": [
+    "flow direction assumed"
+  ]
+}

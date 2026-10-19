@@ -1,0 +1,47 @@
+{
+  "file": "03_bend_45.step",
+  "synthetic": true,
+  "description": "Pipe 200 mm, 45 deg bend R=24 mm, pipe 200 mm; ID 12 mm, OD 16 mm.",
+  "length_unit_in_file": "mm",
+  "topology": "line",
+  "component_count": 3,
+  "ordered": true,
+  "components": [
+    {
+      "type": "pipe",
+      "part": "inlet_pipe",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.2
+    },
+    {
+      "type": "bend",
+      "part": "bend_45",
+      "inner_diameter_m": 0.012,
+      "angle_deg": 45,
+      "bend_radius_m": 0.024,
+      "r_over_d": 2.0,
+      "centerline_length_m": 0.01884955592153876
+    },
+    {
+      "type": "pipe",
+      "part": "outlet_pipe",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.2
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "total_pipe_length_m": 0.4,
+  "total_flow_length_m": 0.4188495559215388,
+  "warnings_contain": [
+    "flow direction assumed"
+  ]
+}

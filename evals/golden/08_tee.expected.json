@@ -1,0 +1,64 @@
+{
+  "file": "08_tee.step",
+  "synthetic": true,
+  "description": "Equal tee ID 12 (run 60 mm, branch 30 mm from the run axis) with three 100 mm pipes (west, east, north). Three open ends: network, no single ordered path.",
+  "length_unit_in_file": "mm",
+  "topology": "network",
+  "component_count": 5,
+  "ordered": false,
+  "components": [
+    {
+      "type": "pipe",
+      "part": "pipe_west",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.1
+    },
+    {
+      "type": "pipe",
+      "part": "tee_12",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.06
+    },
+    {
+      "type": "pipe",
+      "part": "pipe_east",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.1
+    },
+    {
+      "type": "pipe",
+      "part": "tee_12",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.03
+    },
+    {
+      "type": "pipe",
+      "part": "pipe_north",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.1
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "total_pipe_length_m": 0.39,
+  "total_flow_length_m": 0.39,
+  "warnings_contain": [
+    "network topology: single-path solve not available"
+  ]
+}

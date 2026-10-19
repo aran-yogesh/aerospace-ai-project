@@ -1,0 +1,85 @@
+{
+  "file": "07_feed_line.step",
+  "synthetic": true,
+  "description": "3D feed line: riser ID 16 x 150 mm (+Z), 90 deg bend R 32 (split into two torus faces) turning to +X, Swagelok ball valve block (Cv 6), reducer 16 -> 10 over 30 mm, 45 deg bend R 20 in the horizontal plane, outlet ID 10 x 200 mm (split into two cylinder faces). Riser+bend and bend+outlet are fused spools; valve and reducer sit in a sub-assembly.",
+  "length_unit_in_file": "mm",
+  "topology": "line",
+  "component_count": 6,
+  "ordered": true,
+  "components": [
+    {
+      "type": "pipe",
+      "part": "inlet_spool",
+      "inner_diameter_m": 0.016,
+      "length_m": 0.15
+    },
+    {
+      "type": "bend",
+      "part": "inlet_spool",
+      "inner_diameter_m": 0.016,
+      "angle_deg": 90,
+      "bend_radius_m": 0.032,
+      "r_over_d": 2.0,
+      "centerline_length_m": 0.05026548245743669
+    },
+    {
+      "type": "valve",
+      "name": "Swagelok_BallValve_Cv6",
+      "part_path": "/07_feed_line/valve_station/Swagelok_BallValve_Cv6",
+      "vendor": "Swagelok",
+      "valve_type": "BallValve",
+      "cv": 6.0
+    },
+    {
+      "type": "transition",
+      "part": "reducer_16x10",
+      "d_in_m": 0.016,
+      "d_out_m": 0.01,
+      "length_m": 0.03,
+      "half_angle_deg": 5.710593137499643,
+      "kind": "contraction"
+    },
+    {
+      "type": "bend",
+      "part": "outlet_spool",
+      "inner_diameter_m": 0.01,
+      "angle_deg": 45,
+      "bend_radius_m": 0.02,
+      "r_over_d": 2.0,
+      "centerline_length_m": 0.015707963267948967
+    },
+    {
+      "type": "pipe",
+      "part": "outlet_spool",
+      "inner_diameter_m": 0.01,
+      "length_m": 0.2
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      5
+    ]
+  ],
+  "total_pipe_length_m": 0.35,
+  "total_flow_length_m": 0.44597344572538566,
+  "warnings_contain": [
+    "flow direction assumed"
+  ]
+}

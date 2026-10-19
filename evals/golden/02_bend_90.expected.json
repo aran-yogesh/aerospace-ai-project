@@ -1,0 +1,47 @@
+{
+  "file": "02_bend_90.step",
+  "synthetic": true,
+  "description": "Pipe 200 mm, 90 deg bend R=24 mm, pipe 200 mm; ID 12 mm, OD 16 mm.",
+  "length_unit_in_file": "mm",
+  "topology": "line",
+  "component_count": 3,
+  "ordered": true,
+  "components": [
+    {
+      "type": "pipe",
+      "part": "inlet_pipe",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.2
+    },
+    {
+      "type": "bend",
+      "part": "bend_90",
+      "inner_diameter_m": 0.012,
+      "angle_deg": 90,
+      "bend_radius_m": 0.024,
+      "r_over_d": 2.0,
+      "centerline_length_m": 0.03769911184307752
+    },
+    {
+      "type": "pipe",
+      "part": "outlet_pipe",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.2
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "total_pipe_length_m": 0.4,
+  "total_flow_length_m": 0.4376991118430775,
+  "warnings_contain": [
+    "flow direction assumed"
+  ]
+}

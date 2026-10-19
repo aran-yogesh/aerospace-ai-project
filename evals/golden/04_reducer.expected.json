@@ -1,0 +1,47 @@
+{
+  "file": "04_reducer.step",
+  "synthetic": true,
+  "description": "Pipe ID 16 (OD 20) 200 mm, conical reducer ID 16 -> 10 over 30 mm axial, pipe ID 10 (OD 14) 200 mm.",
+  "length_unit_in_file": "mm",
+  "topology": "line",
+  "component_count": 3,
+  "ordered": true,
+  "components": [
+    {
+      "type": "pipe",
+      "part": "pipe_16",
+      "inner_diameter_m": 0.016,
+      "length_m": 0.2
+    },
+    {
+      "type": "transition",
+      "part": "reducer_16x10",
+      "d_in_m": 0.016,
+      "d_out_m": 0.01,
+      "length_m": 0.03,
+      "half_angle_deg": 5.710593137499643,
+      "kind": "contraction"
+    },
+    {
+      "type": "pipe",
+      "part": "pipe_10",
+      "inner_diameter_m": 0.01,
+      "length_m": 0.2
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "total_pipe_length_m": 0.4,
+  "total_flow_length_m": 0.43000000000000005,
+  "warnings_contain": [
+    "flow direction assumed"
+  ]
+}
