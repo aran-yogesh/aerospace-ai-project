@@ -7,7 +7,7 @@ export interface Bend {
   warnings: string[]
   /** Indices of wetted B-rep faces. */
   face_ids: number[]
-  type: "bend"
+  type: 'bend'
   inner_diameter_m: number
   angle_deg: number
   /** Centerline radius (torus major radius). */
@@ -28,19 +28,19 @@ export interface Pipe {
   warnings: string[]
   /** Indices of wetted B-rep faces. */
   face_ids: number[]
-  type: "pipe"
+  type: 'pipe'
   inner_diameter_m: number
   length_m: number
 }
 
 export interface SystemGraph {
-  units: "m"
+  units: 'm'
   components: (Pipe | Bend | Transition | Valve | Unclassified)[]
   edges: [string, string][]
   inlet_id: string | null
   outlet_id: string | null
   ordered_path: string[] | null
-  topology: "line" | "network" | "disconnected"
+  topology: 'line' | 'network' | 'disconnected'
   warnings: string[]
   parser_version: string
 }
@@ -51,13 +51,13 @@ export interface Transition {
   warnings: string[]
   /** Indices of wetted B-rep faces. */
   face_ids: number[]
-  type: "transition"
+  type: 'transition'
   d_in_m: number
   d_out_m: number
   /** Axial length, not slant length. */
   length_m: number
   half_angle_deg: number
-  kind: "contraction" | "expansion" | "unknown"
+  kind: 'contraction' | 'expansion' | 'unknown'
 }
 
 export interface Unclassified {
@@ -66,7 +66,7 @@ export interface Unclassified {
   warnings: string[]
   /** Indices of wetted B-rep faces. */
   face_ids: number[]
-  type: "unclassified"
+  type: 'unclassified'
   name: string
   reason: string
   part_path: string
@@ -78,7 +78,7 @@ export interface Valve {
   warnings: string[]
   /** Indices of wetted B-rep faces. */
   face_ids: number[]
-  type: "valve"
+  type: 'valve'
   name: string
   vendor: string | null
   valve_type: string | null
@@ -89,4 +89,4 @@ export interface Valve {
 
 export type Component = Pipe | Bend | Transition | Valve | Unclassified
 
-export type ComponentType = Component["type"]
+export type ComponentType = Component['type']

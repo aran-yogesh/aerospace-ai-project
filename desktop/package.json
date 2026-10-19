@@ -17,7 +17,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "screenshots": "node scripts/screenshots.ts",
-    "screenshots:dev": "node scripts/screenshots.ts --dev"
+    "screenshots:dev": "node scripts/screenshots.ts --dev",
+    "phase1": "node scripts/phase1.ts",
+    "phase1:dev": "node scripts/phase1.ts --dev"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",
@@ -27,6 +29,7 @@
     "@radix-ui/react-tabs": "^1.2.1",
     "@radix-ui/react-toggle-group": "^1.2.1",
     "@radix-ui/react-tooltip": "^1.4.1",
+    "@tanstack/react-query": "^5.104.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "electron-store": "^12.0.0",
@@ -35,7 +38,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-resizable-panels": "^4.14.6",
-    "tailwind-merge": "^3.7.0"
+    "tailwind-merge": "^3.7.0",
+    "three": "~0.184.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -43,6 +47,7 @@
     "@types/node": "^26.6.5",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
+    "@types/three": "~0.184.1",
     "@vitejs/plugin-react": "^6.1.2",
     "electron": "^44.9.0",
     "electron-vite": "^6.0.0",

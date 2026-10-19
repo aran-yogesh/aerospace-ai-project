@@ -14,6 +14,11 @@ document.documentElement.dataset['theme'] = window.matchMedia('(prefers-color-sc
 // Lets Radix's scroll-lock <style> pass the production CSP (see src/main/index.ts).
 if (window.lemma?.styleNonce) setNonce(window.lemma.styleNonce)
 
+// A file dropped outside the viewer's drop zone must not navigate the window to it.
+for (const type of ['dragover', 'drop'] as const) {
+  window.addEventListener(type, (e) => e.preventDefault())
+}
+
 const root = document.getElementById('root')
 if (!root) throw new Error('#root missing')
 

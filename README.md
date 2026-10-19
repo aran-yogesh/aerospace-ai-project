@@ -27,5 +27,39 @@ To check it: `curl localhost:8000/health` should return `{"status":"ok","db":"ok
 
 ## Make targets
 
-`make up`, `down`, `logs`, `test` (pytest in the container), `lint` (ruff + desktop ESLint),
-`migrate` (Alembic), `format`.
+| Target | What |
+| --- | --- |
+| `make up` / `down` / `logs` | Start (runs migrations), stop, follow logs |
+| `make test` | All backend tests in the container: API, WebSocket, golden parser, type drift |
+| `make test-golden` | Golden parser tests only, with the results table |
+| `make golden` | Regenerate the synthetic golden STEP files and `.expected.json` |
+| `make types` | Regenerate desktop TypeScript types from the Pydantic schema |
+| `make lint` / `format` | Ruff + desktop ESLint and color check / auto-fix |
+| `make migrate` | Apply Alembic migrations |
+
+## Golden CAD tests
+
+`evals/golden/` holds synthetic STEP files built with CadQuery (`generate.py`), each with an
+`NN_name.expected.json` component graph. Real customer files go in `evals/golden/real/` with
+their own expected JSON, and are picked up automatically. The golden files are used in CI only
+and are never shipped.
+
+```bash
+make test-golden   # prints: file | expected | found | max length err % | parse s | result
+make golden        # rebuild the synthetic files after editing generate.py
+```
+
+The table is also written to `evals/golden/RESULTS.md`. Regenerated `.step` files always
+differ, because the STEP header has a timestamp, so commit them only when the geometry changes.
+
+## Desktop review scripts
+
+With the backend up, from `desktop/`:
+
+```bash
+npm run build && npm run phase1   # uploads every golden file through the UI, takes the
+                                  # phase 1 screenshots, audits console + CSP (prod)
+npm run phase1:dev -- --no-shots  # same audit against the dev server
+```
+
+These scripts create projects named `Test · ...` in the dev database.

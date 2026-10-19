@@ -1,14 +1,14 @@
 // GENERATED FILE: do not edit. Source: backend/app/schema/api.py
 // Regenerate with `make types`.
 
-import type { ParseError } from "./geometry"
+import type { ParseError } from './geometry'
 
 export interface FileInfo {
   id: string
   project_id: string
   filename: string
   size_bytes: number
-  status: "uploaded" | "parsing" | "parsed" | "failed"
+  status: 'uploaded' | 'parsing' | 'parsed' | 'failed'
   /** Set when status is failed. */
   error: ParseError | null
   parser_version: string | null
@@ -20,7 +20,7 @@ export interface FileInfo {
 /** Pushed on /ws/files/{id} on connect and on every status change. */
 export interface FileStatusEvent {
   file_id: string
-  status: "uploaded" | "parsing" | "parsed" | "failed"
+  status: 'uploaded' | 'parsing' | 'parsed' | 'failed'
   error: ParseError | null
   parse_seconds: number | null
   component_count: number | null
@@ -51,4 +51,4 @@ export interface ProjectList {
   items: Project[]
 }
 
-export type FileStatus = FileInfo["status"]
+export type FileStatus = FileInfo['status']

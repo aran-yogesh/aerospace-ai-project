@@ -17,7 +17,14 @@ npm run lint             # ESLint (flat config, typescript-eslint, react-hooks, 
 npm run lint:colors      # fails on color literals anywhere in src/ except tokens.css
 npm run screenshots      # Playwright: shoots ../docs/screenshots/phase0/*.png from out/ (build first)
 npm run screenshots:dev  # same against the Vite dev server, reusing `npm run dev` if it is running
+npm run phase1           # Phase 1 end-to-end against the real backend (`make up` first), from out/:
+                         # uploads every evals/golden/*.step through the UI, checks component counts,
+                         # shoots ../docs/screenshots/phase1/*.png and runs the console/CSP audit
+npm run phase1:dev       # same against the Vite dev server (add `-- --no-shots` to skip screenshots)
 ```
+
+`phase1` creates projects named `Test · …`. The API has no delete endpoint yet, so remove
+them from the database if they get in the way.
 
 The backend URL comes from `VITE_API_URL` (default `http://localhost:8000`), read from the
 shell or a `.env` file in `desktop/` at build time. The status bar polls `GET /health`
@@ -41,12 +48,17 @@ src/
       components/
         ui/        shadcn/ui components, restyled (see below)
         app/       TopBar, StatusBar, SettingsDialog, ThemeSelect
-      screens/     ProjectsScreen, WorkspaceScreen (+ workspace/ panes)
+      screens/     ProjectsScreen, WorkspaceScreen (+ workspace/ panes, stages, schematic)
+      viewer/      3D viewer (three.js), the only module that touches WebGL; see ADR 0003
+      workspace/   WorkspaceContext (selection), useFileStatus (WebSocket + polling), warnings
+      types/       generated from the backend (`make types`): geometry.ts, api.ts; never edit
       hooks/       useHashRoute, useBackendHealth
-      lib/         utils (cn), config (API_URL, version), sampleProjects
+      lib/         api (typed client, XHR upload), apiTypes, format, config, utils (cn)
 scripts/
   lint-colors.mjs  color-literal check
-  screenshots.ts   Playwright _electron screenshots + console/CSP audit
+  harness.ts       shared Playwright _electron launcher + console/CSP audit
+  screenshots.ts   Phase 0 screenshots + audit
+  phase1.ts        Phase 1 end-to-end flow, screenshots + audit
 components.json    shadcn config
 ```
 
@@ -59,9 +71,24 @@ The shadcn `@/` alias (in `electron.vite.config.ts`, `tsconfig.web.json` and
 
 The router reads the URL hash:
 
-- `#/`: projects (3 static sample projects)
+- `#/`: projects, from `GET /projects`
 - `#/?empty=1`: projects in the empty state, for previews and screenshots
-- `#/workspace/<id>`: the workspace for a project
+- `#/workspace/<id>`: the workspace for a project. It opens the project's latest file, if
+  there is one.
+
+## Data flow
+
+- **Server state.** All server state goes through `@tanstack/react-query`, with the keys
+  `['projects']`, `['project', id]`, `['file', id]`, `['graph', id]` and `['mesh', id]`.
+  Graph and mesh never change, so they use `staleTime: Infinity`.
+- **Upload.** `POST /projects/{id}/files` goes through XHR to get upload progress. The app
+  checks the extension and size first, and the server validates again.
+- **Status.** `useFileStatus` opens `ws://…/ws/files/{id}` and writes each
+  `FileStatusEvent` into the `['file', id]` cache. While the socket is not open, it polls
+  `GET /files/{id}` every 1.5 s. Both stop at `parsed` or `failed`.
+- **Selection.** `WorkspaceContext` holds `selectedId` and `hoveredId` and is the only
+  selection state. The viewer, the components pane, the schematic and the callout all read
+  it. Esc clears it.
 
 ## Design system
 

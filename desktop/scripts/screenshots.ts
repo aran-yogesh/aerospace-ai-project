@@ -189,10 +189,26 @@ async function main(): Promise<void> {
     const mode = devMode ? 'dev' : 'prod'
     console.log(`mode: ${mode}, url: ${page.url()}`)
 
+    // Projects now come from the API: make sure there is at least one card to open.
+    const api = (process.env['VITE_API_URL'] ?? 'http://localhost:8000').replace(/\/+$/, '')
+    const listed = (await fetch(`${api}/projects`)
+      .then((r) => r.json())
+      .catch(() => ({ items: [] }))) as { items?: unknown[] }
+    if (!listed.items?.length) {
+      await fetch(`${api}/projects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Coolant Loop A' })
+      }).catch(() => undefined)
+    }
+
     // Exercise every screen (and the dialog + tooltip) so the audit covers them all.
     if (takeShots) console.log('screenshots:')
     await setTheme(page, 'dark')
     await go(page, '/')
+    await page.waitForSelector(
+      '[data-testid="project-card"], [data-testid="projects-empty"], [data-testid="projects-error"]'
+    )
     if (takeShots) await shot(page, 'projects-dark')
     else await settle(page)
 

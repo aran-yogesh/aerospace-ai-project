@@ -20,8 +20,8 @@ export function ChatPane({ projectName }: { projectName: string }): React.JSX.El
               <span className="font-medium">{projectName}</span>.
             </p>
             <p>
-              Once you add a STEP file, I can help you trace flow paths, check line sizes and
-              explain where the pressure drop comes from.
+              Chat arrives in a later phase. Then I can help you trace flow paths, check line sizes
+              and explain where the pressure drop comes from.
             </p>
           </div>
         </article>
