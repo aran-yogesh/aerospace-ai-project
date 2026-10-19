@@ -60,7 +60,8 @@ def _ts(schema: dict[str, Any]) -> str:
 
 
 def _literal(value: Any) -> str:
-    return f'"{value}"' if isinstance(value, str) else str(value).lower()
+    # Single quotes to match the desktop Prettier config, so formatting never causes drift.
+    return f"'{value}'" if isinstance(value, str) else str(value).lower()
 
 
 def _interface(name: str, schema: dict[str, Any]) -> str:
@@ -90,7 +91,7 @@ def render() -> str:
     for name in sorted(defs):
         blocks.append(_interface(name, defs[name]))
     blocks.append("export type Component = Pipe | Bend | Transition | Valve | Unclassified")
-    blocks.append('export type ComponentType = Component["type"]')
+    blocks.append("export type ComponentType = Component['type']")
     return "\n\n".join(blocks) + "\n"
 
 
@@ -102,11 +103,11 @@ def render_api() -> str:
     shared = sorted(name for name in defs if name in _geometry_defs())
     blocks = [API_HEADER]
     if shared:
-        blocks.append(f'import type {{ {", ".join(shared)} }} from "./geometry"')
+        blocks.append(f"import type {{ {', '.join(shared)} }} from './geometry'")
     for name in sorted(defs):
         if name not in shared:
             blocks.append(_interface(name, defs[name]))
-    blocks.append('export type FileStatus = FileInfo["status"]')
+    blocks.append("export type FileStatus = FileInfo['status']")
     return "\n\n".join(blocks) + "\n"
 
 

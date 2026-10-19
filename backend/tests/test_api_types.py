@@ -17,5 +17,5 @@ def test_api_types_cover_contract_models():
     text = render_api()
     for name in ("Project", "ProjectDetail", "FileInfo", "FileStatusEvent", "ProjectList"):
         assert f"export interface {name} {{" in text
-    assert 'import type { ParseError } from "./geometry"' in text
-    assert '"uploaded" | "parsing" | "parsed" | "failed"' in text
+    assert "import type { ParseError } from './geometry'" in text
+    assert "'uploaded' | 'parsing' | 'parsed' | 'failed'" in text
