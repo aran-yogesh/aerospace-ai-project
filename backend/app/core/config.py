@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     database_url: str = ""
     llm_provider: str = "none"
     llm_api_key: SecretStr | None = None
+    # Renderer origins allowed to call the API: the Vite dev server, and "null" for the
+    # packaged app, which loads from file://.
+    cors_origins: list[str] = ["http://localhost:5173", "null"]
+    # Outside production, also accept any localhost port (Vite moves off 5173 when it's busy).
+    cors_dev_origin_regex: str = r"^http://(localhost|127\.0\.0\.1):\d+$"
     data_dir: Path = Path(__file__).resolve().parents[3] / "data"
 
 

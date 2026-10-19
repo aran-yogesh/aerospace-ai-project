@@ -1,88 +1,137 @@
 # LemmaLab Desktop
 
-Electron + React + TypeScript, built with [electron-vite](https://electron-vite.org).
-This is just the app shell and theme system. It makes no backend calls.
+Electron + React 18 + TypeScript, built with [electron-vite](https://electron-vite.org).
+Styling is Tailwind CSS v4 (CSS-first `@theme`) plus shadcn/ui components (Radix) kept as
+owned source, lucide-react icons, react-resizable-panels and IBM Plex fonts bundled locally
+through `@fontsource`, with no CDN.
 
 ## Run
 
 ```sh
 npm install
-npm run dev          # Electron with HMR for the renderer
-npm run build        # typecheck, then build into out/
-npm run preview      # run the production build
-npm run typecheck    # tsc for main/preload (node) and renderer (web)
-npm run lint         # ESLint (flat config, typescript-eslint, react-hooks, no color literals)
-npm run lint:colors  # fails on color literals in any CSS file except tokens.css
-npm run format       # Prettier
+npm run dev              # Electron with HMR for the renderer (Vite dev server on :5173)
+npm run build            # typecheck, then build into out/
+npm run preview          # run the production build
+npm run typecheck        # tsc for main/preload/scripts (node) and renderer (web)
+npm run lint             # ESLint (flat config, typescript-eslint, react-hooks, no color literals)
+npm run lint:colors      # fails on color literals anywhere in src/ except tokens.css
+npm run screenshots      # Playwright: shoots ../docs/screenshots/phase0/*.png from out/ (build first)
+npm run screenshots:dev  # same against the Vite dev server, reusing `npm run dev` if it is running
 ```
 
-Recent Electron versions download their binary the first time they run. If `npm run dev`
-reports that the binary is missing, run `node node_modules/electron/install.js` once.
+The backend URL comes from `VITE_API_URL` (default `http://localhost:8000`), read from the
+shell or a `.env` file in `desktop/` at build time. The status bar polls `GET /health`
+every 5s. In dev, the renderer origin is `http://localhost:5173`, which the backend's CORS
+allow-list expects. The production build loads from `file://` (origin `null`).
 
-**Style guide:** open `#/dev`. In dev builds, use the **STYLE GUIDE** button in the top bar.
-It shows every token and component variant in the light and dark themes side by side.
+If `npm run dev` reports that the Electron binary is missing, run
+`node node_modules/electron/install.js` once.
 
 ## Layout
 
 ```
 src/
-  main/           Electron main process (window, IPC, nativeTheme, electron-store)
-  preload/        contextBridge API (window.lemma), typed in index.d.ts
-  shared/         types and constants shared by all three processes
+  main/            Electron main: window, CSP, theme IPC, nativeTheme, electron-store
+  preload/         contextBridge API (window.lemma), typed in global.d.ts
+  shared/          types and constants shared by all three processes
   renderer/
-    index.html    CSP meta tag
-    src/          renderer source root
-      theme/      tokens.css, global.css, fonts.ts, ThemeProvider.tsx, useTheme.ts
-      components/ Button, Tag, Panel, SegmentedControl, Splitter
-      layout/     AppShell.tsx and its panes (components, viewer, results, chat)
-      dev/        StyleGuide (#/dev)
-      hooks/      useHashRoute (tiny hash router)
-scripts/lint-colors.mjs
+    index.html
+    src/           renderer source root, aliased as "@/" (shadcn convention)
+      theme/       tokens.css (the only file with colors), globals.css (Tailwind @theme), fonts
+      components/
+        ui/        shadcn/ui components, restyled (see below)
+        app/       TopBar, StatusBar, SettingsDialog, ThemeSelect
+      screens/     ProjectsScreen, WorkspaceScreen (+ workspace/ panes)
+      hooks/       useHashRoute, useBackendHealth
+      lib/         utils (cn), config (API_URL, version), sampleProjects
+scripts/
+  lint-colors.mjs  color-literal check
+  screenshots.ts   Playwright _electron screenshots + console/CSP audit
+components.json    shadcn config
 ```
 
-The spec's paths `src/theme/`, `src/components/` and `src/layout/AppShell.tsx` sit under
-the renderer source root, `src/renderer/src/`.
+**Path note.** The spec puts components in `desktop/src/components/ui`. electron-vite's
+renderer root is `src/renderer/src`, so they live in `src/renderer/src/components/ui`.
+The shadcn `@/` alias (in `electron.vite.config.ts`, `tsconfig.web.json` and
+`components.json`) points at `src/renderer/src`, so `@/components/ui/button` resolves there.
 
-## Theme rules
+## Routes
 
-- **Use tokens only.** Every color comes from `var(--token)` in `src/renderer/src/theme/tokens.css`:
-  `--bg --surface --surface-raised --text --text-muted --border --accent --on-accent
-  --warning --danger`, plus `--pressure-1..5`, a gray-to-accent scale for the future 3D viewer.
-  `tokens.css` is the only file allowed to contain color literals. Two checks enforce this:
-  - `npm run lint:colors` flags hex, `rgb()`/`hsl()`-style functions and named colors
-    (`white`, `black`, ...) in any other CSS file.
-  - ESLint (`no-restricted-syntax`) flags hex/rgb/hsl string literals in renderer `.ts/.tsx`.
-- Tokens are scoped by `[data-theme="light" | "dark"]`, so a nested element with its own
-  `data-theme` re-themes its subtree. `ThemeProvider` sets the resolved theme on `<html>`.
-- Theme modes are `light`, `dark` and `system` (default `system`). The main process sets
-  `nativeTheme.themeSource` to match the mode, saves the choice with electron-store, and
-  pushes OS changes to the renderer, so `system` updates live.
-- **Radius 0** everywhere. Borders are 1px `var(--border)`.
-- **Accent orange** (`--accent`) is used only for the selected state, the focus ring and the
-  primary action. Primary buttons use a solid accent background with `--on-accent` text.
-  Secondary buttons are transparent with a 1px border that turns accent on hover.
-- **Fonts** are bundled locally from `@fontsource` (no CDN):
-  - IBM Plex Mono for labels, numbers, tables, buttons and headers, in uppercase with
-    `letter-spacing: 0.08em`
-  - IBM Plex Sans for chat message bodies
-- Styling is plain CSS modules with no CSS framework.
+The router reads the URL hash:
+
+- `#/`: projects (3 static sample projects)
+- `#/?empty=1`: projects in the empty state, for previews and screenshots
+- `#/workspace/<id>`: the workspace for a project
+
+## Design system
+
+The spec is in `../docs/decisions/0002-design-system.md`.
+
+- **Tokens.** `theme/tokens.css` defines `--bg --surface --surface-raised --text
+--text-muted --border --accent --on-accent --warning --danger --pressure-1..5` for
+  `[data-theme="dark"|"light"]`. It also defines some extras: `--success` (green for the
+  StatusDot "ok" state, which the token table does not have), `--overlay` (dialog scrim) and
+  `--halftone-dot`. `globals.css` maps them into Tailwind (`bg-surface`, `text-text-muted`,
+  `border-accent`, ...) and maps the shadcn variables (`--background`, `--primary`, ...,
+  `--radius: 0`). Tailwind's default palette, radii and shadows are removed, so
+  `bg-white`, `rounded-md` and `shadow` generate nothing. In this design `accent` always
+  means orange. shadcn's own "accent" hover color is not used.
+- **No color literals.** Only `tokens.css` may contain colors. `npm run lint:colors` scans
+  every CSS/TS/TSX file in `src/` for hex values, `rgb()`/`hsl()`-style functions, Tailwind
+  arbitrary colors (`bg-[#...]`) and Tailwind palette classes (`text-red-500`). ESLint also
+  flags color string literals in the renderer. The main process reads `--bg` from
+  `tokens.css` (`?raw` import) for the window background, so there is no second copy of it.
+- **Utilities.** `mono-label` (Plex Mono 11px, uppercase, 0.08em, 500), `wordmark`,
+  `num` (Plex Mono 13px tabular), `halftone` (1px dots on a 6px grid, text color at 6%, used
+  only on empty states and the viewer), `app-drag` and `app-no-drag`.
+- **Components** in `components/ui`: `button` (primary/secondary/ghost), `callout` (+
+  `LeaderLines`), `panel-header`, `segmented-control`, `tabs`, `tooltip`, `dialog`,
+  `input`, `status-dot`, `resizable`.
+
+## Theme
+
+The modes are `light`, `dark` and `auto` (the default). The main process sets
+`nativeTheme.themeSource`, saves the mode with electron-store and broadcasts every change
+(a new mode or an OS appearance change) to all windows, so `auto` follows the OS live. The
+BrowserWindow background follows the resolved theme, so there is no flash. Use
+`window.lemma.theme.get() / set(mode) / onChange(cb)`.
 
 ## Security
 
-- `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true` (and `app.enableSandbox()`),
-  `webviewTag: false`.
-- A strict CSP in `index.html`:
-  `default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'`.
-  In dev, electron-vite serves the page from its dev server origin, so `'self'` also covers HMR.
-- The preload exposes only `window.lemma.theme.{get, set, onSystemChange}`. Main checks
-  each IPC call: the sender must be our top-level frame, and the mode must be
-  `light | dark | system`.
-- New windows are denied (http(s) links open in the system browser). Navigation away from
-  the app and `<webview>` attachment are blocked.
-- electron-store runs only in main, because a sandboxed preload has no Node access.
+- `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`
+  (plus `app.enableSandbox()`) and `webviewTag: false`. New windows are denied, and
+  navigation away from the app is blocked.
+- The CSP is sent as a response header from `session.webRequest.onHeadersReceived`, and it
+  depends on the environment:
+  - dev: `default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; font-src 'self' data:; connect-src 'self' <api origin> ws://localhost:*`
+  - prod: the same without `'unsafe-inline'` and `'unsafe-eval'`, with one addition:
+    `style-src 'self' 'nonce-<random per launch>'`. Radix Dialog's scroll lock
+    (react-remove-scroll) inserts one `<style>` element at runtime. The preload passes the
+    nonce to the renderer, which hands it to `get-nonce`. Without it, opening Settings would
+    cause a CSP violation.
+  - dev scripts: dev has no `'unsafe-inline'` for scripts, so a small Vite plugin
+    (`externalReactPreamble` in `electron.vite.config.ts`) serves the React Refresh
+    preamble as an external module instead of an inline `<script>`.
+- The preload logs every `securitypolicyviolation` as a `[CSP]` console error.
 
-## Build notes
+## Screenshots and audit
 
-- `package.json` has `"type": "module"`, so the main process is built as ESM. That lets
-  the ESM-only `electron-store` v12 load natively; it is externalized, not bundled.
-- Sandboxed preloads must be CommonJS, so the preload is forced to `out/preload/index.cjs`.
+`scripts/screenshots.ts` (run by Node's built-in TypeScript type stripping) launches
+`out/main/index.js` with Playwright's `_electron`. It uses a 1440x900 window and a throwaway
+userData dir, so your saved theme is untouched. It sets the theme through
+`window.lemma.theme.set()` and captures `projects-dark`, `projects-light`,
+`projects-empty-dark`, `workspace-dark`, `workspace-light` and `settings-dark`. It
+also exercises the chat tooltip and the dialog, then reports:
+
+- every renderer console message, mirrored to stdout by main when
+  `LEMMA_CAPTURE_CONSOLE=1`
+- page errors
+- CSP violations
+- a CSP probe that injects an inline `<style>`: it must be blocked in prod and applied in dev
+
+The run fails if any errors or violations are found. `--no-shots` runs only the audit.
+
+The script sets `LEMMA_AUTOMATION=1`. In that mode the window opens with `showInactive()`,
+parked at the right edge of the screen, so it never takes focus. `npm run dev` is not
+affected. Screenshots are page captures, so the macOS traffic lights (drawn by the OS in the
+84px inset at the top left) do not appear in them.

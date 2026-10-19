@@ -3,7 +3,7 @@
 from collections.abc import Iterator
 from functools import lru_cache
 
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
@@ -14,7 +14,7 @@ def get_engine() -> Engine:
     url = get_settings().database_url
     if not url:
         raise RuntimeError("DATABASE_URL is not set.")
-    return create_engine(url, pool_pre_ping=True)
+    return create_engine(url, pool_pre_ping=True, connect_args={"connect_timeout": 2})
 
 
 @lru_cache
@@ -26,3 +26,9 @@ def get_db() -> Iterator[Session]:
     """FastAPI dependency: one session per request."""
     with get_sessionmaker()() as session:
         yield session
+
+
+def ping() -> None:
+    """Raise if the database is unreachable."""
+    with get_engine().connect() as conn:
+        conn.execute(text("SELECT 1"))

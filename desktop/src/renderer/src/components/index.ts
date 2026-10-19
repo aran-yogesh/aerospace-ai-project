@@ -1,5 +1,0 @@
-export { Button, type ButtonProps, type ButtonVariant } from './Button'
-export { Tag, type TagProps, type TagVariant } from './Tag'
-export { Panel, type PanelProps } from './Panel'
-export { SegmentedControl, type SegmentedControlProps, type SegmentedOption } from './SegmentedControl'
-export { Splitter, type SplitterProps } from './Splitter'

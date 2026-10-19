@@ -1,4 +1,4 @@
-"""Declarative base. Every table carries user_id so all data is tenant-scoped."""
+"""Declarative base. Every table inherits UserOwned so all data is scoped to a user."""
 
 from datetime import datetime
 from uuid import UUID, uuid4
@@ -20,13 +20,10 @@ class Base(DeclarativeBase):
 
 
 class UserOwned:
-    """Mixin required on every table: id, user_id, timestamps."""
+    """Required columns on every table."""
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     user_id: Mapped[UUID] = mapped_column(index=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )

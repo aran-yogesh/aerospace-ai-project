@@ -26,8 +26,8 @@ ps: ## Show service status
 build: .env ## Build the backend image
 	$(COMPOSE) build lemma-core
 
-test: .env ## Run pytest inside the container
-	$(CORE) pytest
+test: .env ## Run pytest inside the container (starts Postgres)
+	$(COMPOSE) run --rm lemma-core pytest
 
 migrate: .env ## Apply Alembic migrations (starts Postgres if needed)
 	$(COMPOSE) run --rm lemma-core alembic upgrade head

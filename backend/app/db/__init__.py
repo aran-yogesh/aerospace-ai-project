@@ -1,4 +1,3 @@
-from app.db import models
-from app.db.base import Base
+from app.db.base import Base, UserOwned
 
-__all__ = ["Base", "models"]
+__all__ = ["Base", "UserOwned"]

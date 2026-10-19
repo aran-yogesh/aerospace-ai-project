@@ -1,5 +1,10 @@
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { ResolvedTheme, ThemeMode, ThemeState } from '../../../shared/theme'
+import {
+  resolveTheme,
+  type ResolvedTheme,
+  type ThemeMode,
+  type ThemeState
+} from '../../../shared/theme'
 
 export interface ThemeContextValue {
   mode: ThemeMode
@@ -15,7 +20,7 @@ function prefersDark(): ResolvedTheme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const [state, setState] = useState<ThemeState>(() => ({ mode: 'system', system: prefersDark() }))
+  const [state, setState] = useState<ThemeState>(() => ({ mode: 'auto', system: prefersDark() }))
   const api = window.lemma?.theme
 
   useEffect(() => {
@@ -27,9 +32,7 @@ export function ThemeProvider({ children }: { children: ReactNode }): React.JSX.
         if (!cancelled) setState(next)
       })
       .catch((err: unknown) => console.error('theme.get failed', err))
-    const unsubscribe = api.onSystemChange((system) => {
-      setState((prev) => ({ ...prev, system }))
-    })
+    const unsubscribe = api.onChange(setState)
     return () => {
       cancelled = true
       unsubscribe()
@@ -48,13 +51,16 @@ export function ThemeProvider({ children }: { children: ReactNode }): React.JSX.
     [api]
   )
 
-  const resolved: ResolvedTheme = state.mode === 'system' ? state.system : state.mode
+  const resolved = resolveTheme(state)
 
   useEffect(() => {
     document.documentElement.dataset['theme'] = resolved
   }, [resolved])
 
-  const value = useMemo(() => ({ mode: state.mode, resolved, setMode }), [state.mode, resolved, setMode])
+  const value = useMemo(
+    () => ({ mode: state.mode, resolved, setMode }),
+    [state.mode, resolved, setMode]
+  )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

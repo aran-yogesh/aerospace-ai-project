@@ -6,7 +6,7 @@ import globals from 'globals'
 // Matches color literals in string/template literals: hex, rgb()/hsl() etc., and common
 // named colors used as whole values. Colors must come from CSS tokens (var(--token)).
 const COLOR_LITERAL =
-  "/(#[0-9a-fA-F]{3,8}\\b|\\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch)\\s*\\(|^\\s*(white|black|red|green|blue|gray|grey|orange|yellow|purple|pink)\\s*$)/i"
+  '/(#[0-9a-fA-F]{3,8}\\b|\\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch)\\s*\\(|^\\s*(white|black|red|green|blue|gray|grey|orange|yellow|purple|pink)\\s*$)/i'
 
 const noColorLiterals = {
   'no-restricted-syntax': [
@@ -27,7 +27,13 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['src/main/**/*.ts', 'src/preload/**/*.ts', 'src/shared/**/*.ts', '*.config.{js,ts}', 'scripts/**/*.mjs'],
+    files: [
+      'src/main/**/*.ts',
+      'src/preload/**/*.ts',
+      'src/shared/**/*.ts',
+      '*.config.{js,ts}',
+      'scripts/**/*.{mjs,ts}'
+    ],
     languageOptions: { globals: globals.node }
   },
   {
@@ -41,7 +47,10 @@ export default tseslint.config(
   },
   {
     rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+      ]
     }
   }
 )

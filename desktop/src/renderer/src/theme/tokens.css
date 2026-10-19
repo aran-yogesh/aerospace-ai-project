@@ -1,9 +1,13 @@
 /*
- * LemmaLab design tokens. This is the ONLY file allowed to contain color literals
- * (enforced by `npm run lint:colors` and ESLint). Everything else uses var(--token).
+ * LemmaLab design tokens. This is the ONLY file in src/ allowed to contain color
+ * literals (enforced by `npm run lint:colors` and ESLint). Everything else uses
+ * var(--token) or the Tailwind utilities mapped from these tokens in globals.css.
  *
- * Tokens are scoped to [data-theme] (not only :root) so a nested element with its own
- * data-theme attribute re-themes its subtree (used by the /dev style guide).
+ * The main process also reads --bg from this file (see src/main/windowTheme.ts) so the
+ * BrowserWindow background matches the resolved theme with no flash.
+ *
+ * Tokens are scoped to [data-theme] so a nested element with its own data-theme
+ * re-themes its subtree.
  */
 
 :root,
@@ -20,13 +24,19 @@
   --on-accent: #111111;
   --warning: #e8b931;
   --danger: #e5484d;
+  /* Not in the Phase 0 token table; StatusDot needs a green "ok" state. */
+  --success: #3fb950;
 
-  /* Pressure scale (future 3D viewer): neutral gray -> accent. */
-  --pressure-1: #3a3a3a;
-  --pressure-2: #644436;
-  --pressure-3: #8d4e32;
-  --pressure-4: #b7582e;
+  /* Pressure scale: 5 even steps from --text-muted gray to --accent orange. */
+  --pressure-1: #8a8a8a;
+  --pressure-2: #a08072;
+  --pressure-3: #b5765a;
+  --pressure-4: #cb6c42;
   --pressure-5: #e0622a;
+
+  /* Derived. */
+  --overlay: rgb(0 0 0 / 0.72);
+  --halftone-dot: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
 [data-theme='light'] {
@@ -42,30 +52,38 @@
   --on-accent: #111111;
   --warning: #b8860b;
   --danger: #c62f34;
+  --success: #1a7f37;
 
-  --pressure-1: #bfbfbf;
-  --pressure-2: #c7a89a;
-  --pressure-3: #d09175;
-  --pressure-4: #d87a4f;
+  --pressure-1: #6b6b6b;
+  --pressure-2: #88695b;
+  --pressure-3: #a6674b;
+  --pressure-4: #c3643a;
   --pressure-5: #e0622a;
+
+  --overlay: rgb(17 17 17 / 0.32);
+  --halftone-dot: color-mix(in srgb, var(--text) 6%, transparent);
 }
 
-/* Non-color tokens (theme independent). */
-:root {
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+/*
+ * shadcn/ui semantic variables, mapped onto the LemmaLab tokens. Note: shadcn's own
+ * "accent" (a hover surface) is NOT mapped; in LemmaLab `accent` always means orange.
+ */
+:root,
+[data-theme] {
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--on-accent);
+  --secondary: var(--surface-raised);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--text-muted);
+  --destructive: var(--danger);
+  --input: var(--border);
+  --ring: var(--accent);
   --radius: 0;
-  --border-width: 1px;
-  --tracking-label: 0.08em;
-  --focus-ring: 2px solid var(--accent);
-  --focus-offset: 1px;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --text-xs: 11px;
-  --text-sm: 12px;
-  --text-md: 14px;
-  --bar-height: 44px;
 }
