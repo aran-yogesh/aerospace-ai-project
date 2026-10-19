@@ -1,0 +1,11 @@
+# Loss coefficients (K) for fittings. Bump `version` on any change: results record it.
+version: "2026.10.0"
+entries:
+  elbow_90_long_radius_flanged:
+    value: 0.20
+    family: elbow_90
+    source: "Crane TP-410, A-29"
+  gate_valve_fully_open:
+    value: 0.15
+    family: gate_valve
+    source: "Crane TP-410, A-27"
