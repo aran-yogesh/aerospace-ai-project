@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # Outside production, also accept any localhost port (Vite moves off 5173 when it's busy).
     cors_dev_origin_regex: str = r"^http://(localhost|127\.0\.0\.1):\d+$"
     data_dir: Path = Path(__file__).resolve().parents[3] / "data"
+    evals_dir: Path = Path(__file__).resolve().parents[3] / "evals"
+    # Uploaded CAD files live in a Docker named volume, never in the repo.
+    uploads_dir: Path = Path("/uploads")
+    max_upload_bytes: int = 50 * 1024 * 1024
 
 
 @lru_cache

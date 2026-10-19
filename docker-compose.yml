@@ -26,11 +26,19 @@ services:
       # Inside the compose network Postgres is reachable at lemma-postgres:5432.
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@lemma-postgres:5432/${POSTGRES_DB}
       DATA_DIR: /data
+      EVALS_DIR: /evals
+      UPLOADS_DIR: /uploads
+      TYPES_OUT: /types/geometry.ts
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
       - ./data:/data:ro
+      # Golden CAD files: read by tests, written by `make golden`. Never baked into the image.
+      - ./evals:/evals
+      # Generated TypeScript types for the desktop app (`make types`).
+      - ./desktop/src/renderer/src/types:/types
+      - lemma-uploads:/uploads
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
       interval: 5s
@@ -43,3 +51,4 @@ services:
 
 volumes:
   lemma-pgdata:
+  lemma-uploads:
