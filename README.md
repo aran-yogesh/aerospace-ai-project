@@ -4,8 +4,11 @@ Pressure-drop analysis for flow systems from CAD, with an engineering assistant.
 
 ## Setup
 
+**New to the project? Start with the full [installation guide](docs/INSTALL.md)**, which covers
+prerequisites, a first run, tests and troubleshooting. The short version:
+
 ```bash
-git clone <repo-url> lemmalab && cd lemmalab
+git clone https://github.com/aran-yogesh/aerospace-ai-project.git lemmalab && cd lemmalab
 cp .env.example .env
 make up
 cd desktop && npm i && npm run dev
