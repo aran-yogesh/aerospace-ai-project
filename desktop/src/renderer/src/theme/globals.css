@@ -37,6 +37,18 @@
     }
   }
 
+  /* Parsing: a 1px scan line sweeping the viewer. The one looping motion in the app. */
+  --animate-scan: scan 2400ms linear infinite;
+
+  @keyframes scan {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
   --default-transition-duration: 120ms;
   --default-transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }

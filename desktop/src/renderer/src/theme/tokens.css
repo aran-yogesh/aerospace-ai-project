@@ -37,6 +37,11 @@
   /* Derived. */
   --overlay: rgb(0 0 0 / 0.72);
   --halftone-dot: color-mix(in srgb, var(--text) 6%, transparent);
+
+  /* 3D viewer (read at runtime by src/viewer/theme.ts via getComputedStyle). */
+  --viewer-model: #5a5a5a;
+  --viewer-edge: #f2f2f2;
+  --viewer-edge-opacity: 0.6;
 }
 
 [data-theme='light'] {
@@ -62,6 +67,22 @@
 
   --overlay: rgb(17 17 17 / 0.32);
   --halftone-dot: color-mix(in srgb, var(--text) 6%, transparent);
+
+  --viewer-model: #d0d0d0;
+  --viewer-edge: #111111;
+  --viewer-edge-opacity: 0.7;
+}
+
+/*
+ * Viewer state modifiers, shared by both themes. Hover lifts the model fill 15% toward
+ * white; selection mixes the accent over the fill at 85% and draws accent edges.
+ */
+:root,
+[data-theme] {
+  --viewer-hover-lift: 0.15;
+  --viewer-selected-mix: 0.85;
+  --viewer-selected-edge: var(--accent);
+  --viewer-selected-edge-opacity: 1;
 }
 
 /*

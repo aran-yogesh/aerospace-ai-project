@@ -1,0 +1,46 @@
+{
+  "file": "05_valve.step",
+  "synthetic": true,
+  "description": "Pipe 200 mm, a 30x30x60 mm block with a 12 mm through-bore named 'Swagelok_BallValve_Cv12' touching both pipe ends, pipe 200 mm; ID 12 mm, OD 16 mm.",
+  "length_unit_in_file": "mm",
+  "topology": "line",
+  "component_count": 3,
+  "ordered": true,
+  "components": [
+    {
+      "type": "pipe",
+      "part": "inlet_pipe",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.2
+    },
+    {
+      "type": "valve",
+      "name": "Swagelok_BallValve_Cv12",
+      "part_path": "/05_valve/Swagelok_BallValve_Cv12",
+      "vendor": "Swagelok",
+      "valve_type": "BallValve",
+      "cv": 12.0
+    },
+    {
+      "type": "pipe",
+      "part": "outlet_pipe",
+      "inner_diameter_m": 0.012,
+      "length_m": 0.2
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "total_pipe_length_m": 0.4,
+  "total_flow_length_m": 0.4,
+  "warnings_contain": [
+    "flow direction assumed"
+  ]
+}

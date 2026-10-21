@@ -2,7 +2,7 @@ COMPOSE := docker compose
 CORE    := $(COMPOSE) run --rm --no-deps lemma-core
 
 .DEFAULT_GOAL := help
-.PHONY: help up down logs test migrate lint format build ps desktop-install desktop-dev desktop-lint
+.PHONY: help up down logs test test-golden golden types migrate lint format build ps desktop-install desktop-dev
 
 help: ## Show targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  %-16s %s\n",$$1,$$2}'
@@ -28,6 +28,15 @@ build: .env ## Build the backend image
 
 test: .env ## Run pytest inside the container (starts Postgres)
 	$(COMPOSE) run --rm lemma-core pytest
+
+test-golden: .env ## Run only the golden parser tests, with a results table
+	$(COMPOSE) run --rm lemma-core pytest tests/test_parser_golden.py -v
+
+golden: .env ## Regenerate the synthetic golden STEP files + expected JSON
+	$(CORE) python /evals/golden/generate.py
+
+types: .env ## Regenerate desktop TypeScript types from the Pydantic schema
+	$(CORE) python -m scripts.gen_ts_types /types/geometry.ts
 
 migrate: .env ## Apply Alembic migrations (starts Postgres if needed)
 	$(COMPOSE) run --rm lemma-core alembic upgrade head

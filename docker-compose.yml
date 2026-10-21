@@ -26,11 +26,26 @@ services:
       # Inside the compose network Postgres is reachable at lemma-postgres:5432.
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@lemma-postgres:5432/${POSTGRES_DB}
       DATA_DIR: /data
+      EVALS_DIR: /evals
+      UPLOADS_DIR: /uploads
+      TYPES_OUT: /types/geometry.ts
+    # Dev: apply migrations before serving so `make up` yields a ready schema. A failed
+    # migration is logged loudly but still starts the server (so /health and the logs stay
+    # reachable instead of a crash loop); fix it, then `make migrate`.
+    # `docker compose run lemma-core <cmd>` (make test/migrate/lint) overrides this.
+    command: >-
+      sh -c "alembic upgrade head || echo 'lemma-core: MIGRATION FAILED, see above; run make migrate' >&2;
+      exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
       - ./data:/data:ro
+      # Golden CAD files: read by tests, written by `make golden`. Never baked into the image.
+      - ./evals:/evals
+      # Generated TypeScript types for the desktop app (`make types`).
+      - ./desktop/src/renderer/src/types:/types
+      - lemma-uploads:/uploads
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
       interval: 5s
@@ -43,3 +58,4 @@ services:
 
 volumes:
   lemma-pgdata:
+  lemma-uploads:

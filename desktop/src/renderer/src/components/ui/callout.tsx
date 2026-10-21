@@ -19,7 +19,10 @@ const calloutVariants = cva(
         default: 'border-border bg-bg text-text',
         selected: 'border-accent bg-bg text-text',
         approximate: 'border-dashed border-accent bg-bg text-text',
-        filled: 'border-accent bg-accent text-on-accent'
+        filled: 'border-accent bg-accent text-on-accent',
+        // Status variants recolor the marker too, so they never read as a selection.
+        warning: 'border-warning bg-bg text-warning before:bg-warning',
+        danger: 'border-danger bg-bg text-danger before:bg-danger'
       }
     },
     defaultVariants: { variant: 'default' }
