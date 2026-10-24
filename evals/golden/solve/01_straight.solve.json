@@ -1,0 +1,31 @@
+{
+  "status": "pending review by Rohith",
+  "case": "01_straight",
+  "graph": "../01_straight.expected.json",
+  "worksheet": "01.worksheet.md",
+  "fluid": {
+    "name": "Water",
+    "temperature_k": 293.15,
+    "pressure_pa": 100000.0,
+    "density_kg_m3": 998.2065434976523,
+    "viscosity_pa_s": 0.0010015965513039892,
+    "source": "CoolProp 8.0.0 PropsSI('D'/'V', 'T', 293.15, 'P', 1e5, 'Water'), run once in lemma-core"
+  },
+  "material": {
+    "key": "stainless_drawn",
+    "roughness_m": 1.524e-06,
+    "source": "Crane TP-410 A-23, drawn tubing 0.000005 ft"
+  },
+  "k_overrides": {},
+  "mdot_kg_s": 0.1,
+  "segments": [
+    {
+      "component_id": "comp_0",
+      "type": "pipe",
+      "d_m": 0.012,
+      "length_m": 0.5,
+      "expected_dp_pa": 501.665
+    }
+  ],
+  "expected_total_dp_pa": 501.665
+}

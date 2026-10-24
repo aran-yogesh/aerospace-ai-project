@@ -1,7 +1,117 @@
-# Loss coefficients (K) for fittings. Bump `version` on any change; results record it.
-version: "2026.10.0"
+# Loss coefficients (K) for fittings. Bump `version` on any change; datasets record it.
+# Validated on startup by app.constants (the app refuses to start on an invalid file).
+#
+# Values are Crane TP-410 multiples of f_T evaluated at f_T = 0.023 (1 in. nominal,
+# clean commercial steel), except entrance/exit which are absolute. ALL entries are
+# status: unverified until Rohith checks them against the book and flips the status.
+# Unverified entries are always reported as "family" (approximate), never "exact".
+# A valve_type that matches only a family resolves to the FIRST entry of that family here.
+# This table is never returned by the API; only resolved values for a user's components.
+version: "2026.10.1"
 entries:
-  elbow_90_long_radius_flanged:
-    value: 0.20
+  ball_valve:
+    value: 0.069
+    family: valve_ball
+    source: "Crane TP-410, A-28: ball valve, full port, K = 3 f_T"
+    status: unverified
+  ball_valve_trunnion:
+    value: 0.069
+    family: valve_ball
+    source: "Crane TP-410, A-28: ball valve, full port (beta = 1), K = 3 f_T"
+    status: unverified
+    notes: "Reduced-port balls need Crane's beta formula; not covered."
+  globe_valve:
+    value: 7.82
+    family: valve_globe
+    source: "Crane TP-410, A-27: globe valve, standard pattern, K = 340 f_T"
+    status: unverified
+  globe_valve_y_pattern:
+    value: 1.265
+    family: valve_globe
+    source: "Crane TP-410, A-27: globe valve, Y-pattern 60 deg stem, K = 55 f_T"
+    status: unverified
+  angle_valve:
+    value: 3.45
+    family: valve_globe
+    source: "Crane TP-410, A-27: angle valve, K = 150 f_T"
+    status: unverified
+  gate_valve:
+    value: 0.184
+    family: valve_gate
+    source: "Crane TP-410, A-27: gate valve, wedge disc, full open, K = 8 f_T"
+    status: unverified
+  swing_check_valve:
+    value: 2.3
+    family: valve_check_swing
+    source: "Crane TP-410, A-27: swing check valve, K = 100 f_T"
+    status: unverified
+  swing_check_valve_clearway:
+    value: 1.15
+    family: valve_check_swing
+    source: "Crane TP-410, A-27: swing check valve, clearway, K = 50 f_T"
+    status: unverified
+  butterfly_valve:
+    value: 1.035
+    family: valve_butterfly
+    source: "Crane TP-410, A-29: butterfly valve, 2 to 8 in., K = 45 f_T"
+    status: unverified
+  butterfly_valve_large:
+    value: 0.805
+    family: valve_butterfly
+    source: "Crane TP-410, A-29: butterfly valve, 10 to 14 in., K = 35 f_T"
+    status: unverified
+  elbow_90_standard:
+    value: 0.69
     family: elbow_90
-    source: "Crane TP-410, A-29"
+    source: "Crane TP-410, A-29: standard 90 deg threaded elbow, K = 30 f_T"
+    status: unverified
+  elbow_90_long_radius_flanged:
+    value: 0.322
+    family: elbow_90
+    source: "Crane TP-410, A-29: flanged/butt-weld 90 deg elbow, r/d = 1.5, K = 14 f_T"
+    status: unverified
+  elbow_90_mitre:
+    value: 1.38
+    family: elbow_90
+    source: "Crane TP-410, A-29: mitre bend, 90 deg, K = 60 f_T"
+    status: unverified
+  elbow_45_standard:
+    value: 0.368
+    family: elbow_45
+    source: "Crane TP-410, A-29: standard 45 deg threaded elbow, K = 16 f_T"
+    status: unverified
+  elbow_45_mitre:
+    value: 0.345
+    family: elbow_45
+    source: "Crane TP-410, A-29: mitre bend, 45 deg, K = 15 f_T"
+    status: unverified
+  tee_run:
+    value: 0.46
+    family: tee_run
+    source: "Crane TP-410, A-29: standard tee, flow through run, K = 20 f_T"
+    status: unverified
+  tee_branch:
+    value: 1.38
+    family: tee_branch
+    source: "Crane TP-410, A-29: standard tee, flow through branch, K = 60 f_T"
+    status: unverified
+  entrance_sharp_edged:
+    value: 0.5
+    family: entrance
+    source: "Crane TP-410, A-30: pipe entrance, flush sharp-edged, K = 0.5"
+    status: unverified
+  entrance_inward_projecting:
+    value: 0.78
+    family: entrance
+    source: "Crane TP-410, A-30: pipe entrance, inward projecting, K = 0.78"
+    status: unverified
+  entrance_rounded:
+    value: 0.04
+    family: entrance
+    source: "Crane TP-410, A-30: pipe entrance, rounded r/d >= 0.15, K = 0.04"
+    status: unverified
+  exit:
+    value: 1.0
+    family: exit
+    source: "Crane TP-410, A-30: pipe exit (projecting, sharp-edged or rounded), K = 1.0"
+    status: unverified

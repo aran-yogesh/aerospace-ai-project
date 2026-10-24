@@ -15,11 +15,12 @@ logger = logging.getLogger(__name__)
 class AppError(Exception):
     """Raise from anywhere in the app to return a structured error."""
 
-    def __init__(self, code: str, detail: Any = None, status_code: int = 400) -> None:
+    def __init__(self, code: str, detail: Any = None, status_code: int = 400, **extra: Any) -> None:
         super().__init__(code)
         self.code = code
         self.detail = detail
         self.status_code = status_code
+        self.extra = extra  # extra top-level fields, e.g. {"components": [...]}
 
 
 class NotImplementedYet(AppError):
@@ -41,7 +42,9 @@ def _status_code_slug(status_code: int) -> str:
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app_error(_: Request, exc: AppError) -> JSONResponse:
-        return JSONResponse(error_body(exc.code, exc.detail), status_code=exc.status_code)
+        return JSONResponse(
+            {**error_body(exc.code, exc.detail), **exc.extra}, status_code=exc.status_code
+        )
 
     @app.exception_handler(StarletteHTTPException)
     async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
