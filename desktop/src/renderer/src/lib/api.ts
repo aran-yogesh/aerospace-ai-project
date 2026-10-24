@@ -6,6 +6,16 @@ import type { SystemGraph } from '@/types/geometry'
 import type { MeshShapes } from '@/viewer'
 import { API_URL } from './config'
 import type { FileInfo, FileStatusEvent, Project, ProjectDetail, ProjectList } from './apiTypes'
+import type {
+  Dataset,
+  FluidList,
+  MaterialList,
+  ResolveResult,
+  SetupIn,
+  SetupView,
+  SolveIn,
+  SolveRun
+} from './apiTypes'
 
 export class ApiError extends Error {
   readonly status: number
@@ -65,8 +75,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T
 }
 
-const json = (body: unknown): RequestInit => ({
-  method: 'POST',
+const json = (body: unknown, method = 'POST'): RequestInit => ({
+  method,
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(body)
 })
@@ -77,7 +87,19 @@ export const api = {
   createProject: (name: string) => request<Project>('/projects', json({ name })),
   getFile: (id: string) => request<FileInfo>(`/files/${encodeURIComponent(id)}`),
   getGraph: (id: string) => request<SystemGraph>(`/files/${encodeURIComponent(id)}/graph`),
-  getMesh: (id: string) => request<MeshShapes>(`/files/${encodeURIComponent(id)}/mesh`)
+  getMesh: (id: string) => request<MeshShapes>(`/files/${encodeURIComponent(id)}/mesh`),
+  listFluids: () => request<FluidList>('/fluids').then((r) => r.items),
+  listMaterials: () => request<MaterialList>('/materials'),
+  getSetup: (fileId: string) => request<SetupView>(`/files/${encodeURIComponent(fileId)}/setup`),
+  putSetup: (fileId: string, body: SetupIn) =>
+    request<SetupView>(`/files/${encodeURIComponent(fileId)}/setup`, json(body, 'PUT')),
+  resolve: (fileId: string) =>
+    request<ResolveResult>(`/files/${encodeURIComponent(fileId)}/resolve`, { method: 'POST' }),
+  confirm: (fileId: string) =>
+    request<Dataset>(`/files/${encodeURIComponent(fileId)}/datasets`, { method: 'POST' }),
+  getDataset: (id: string) => request<Dataset>(`/datasets/${encodeURIComponent(id)}`),
+  solve: (datasetId: string, body: SolveIn) =>
+    request<SolveRun>(`/datasets/${encodeURIComponent(datasetId)}/solve`, json(body))
 }
 
 /** ws://host/ws/files/{id}, derived from API_URL. */

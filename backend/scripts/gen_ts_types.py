@@ -2,7 +2,8 @@
 
 Usage: python -m scripts.gen_ts_types [OUT_PATH] [--check]
 Writes OUT_PATH (geometry.ts, from app/schema/geometry.py) and api.ts next to it
-(REST/WebSocket models from app/schema/api.py, importing shared types from ./geometry).
+(REST/WebSocket models from app/schema/api.py and app/schema/solve.py, importing shared
+types from ./geometry).
 With --check, exit 1 if either file is out of date (used by tests/CI).
 """
 
@@ -15,6 +16,7 @@ from pydantic.json_schema import models_json_schema
 
 from app.schema.api import API_MODELS
 from app.schema.geometry import ParseError, SystemGraph
+from app.schema.solve import SOLVE_API_MODELS
 
 DEFAULT_OUT = Path(__file__).resolve().parents[2] / "desktop/src/renderer/src/types/geometry.ts"
 HEADER = (
@@ -22,7 +24,7 @@ HEADER = (
     "// Regenerate with `make types`."
 )
 API_HEADER = (
-    "// GENERATED FILE: do not edit. Source: backend/app/schema/api.py\n"
+    "// GENERATED FILE: do not edit. Source: backend/app/schema/api.py, solve.py\n"
     "// Regenerate with `make types`."
 )
 API_FILENAME = "api.ts"
@@ -51,6 +53,12 @@ def _ts(schema: dict[str, Any]) -> str:
         return "boolean"
     if kind == "null":
         return "null"
+    if kind == "object":
+        values = [*schema.get("patternProperties", {}).values()]
+        if isinstance(extra := schema.get("additionalProperties"), dict):
+            values.append(extra)
+        if values:
+            return f"Record<string, {' | '.join(_ts(v) for v in values)}>"
     if kind == "array":
         if "prefixItems" in schema:
             return "[" + ", ".join(_ts(s) for s in schema["prefixItems"]) + "]"
@@ -96,9 +104,8 @@ def render() -> str:
 
 
 def render_api() -> str:
-    _, top = models_json_schema(
-        [(m, "serialization") for m in API_MODELS], ref_template="#/$defs/{model}"
-    )
+    models = [(m, "serialization") for m in (*API_MODELS, *SOLVE_API_MODELS)]
+    _, top = models_json_schema(models, ref_template="#/$defs/{model}")
     defs = top.get("$defs", {})
     shared = sorted(name for name in defs if name in _geometry_defs())
     blocks = [API_HEADER]
@@ -108,6 +115,8 @@ def render_api() -> str:
         if name not in shared:
             blocks.append(_interface(name, defs[name]))
     blocks.append("export type FileStatus = FileInfo['status']")
+    blocks.append("export type KMatch = KRow['match']")
+    blocks.append("export type SolveMode = SolveIn['mode']")
     return "\n\n".join(blocks) + "\n"
 
 

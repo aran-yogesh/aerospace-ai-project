@@ -1,0 +1,48 @@
+{
+  "status": "pending review by Rohith",
+  "case": "02_bend_90",
+  "graph": "../02_bend_90.expected.json",
+  "worksheet": "02.worksheet.md",
+  "fluid": {
+    "name": "Water",
+    "temperature_k": 293.15,
+    "pressure_pa": 100000.0,
+    "density_kg_m3": 998.2065434976523,
+    "viscosity_pa_s": 0.0010015965513039892,
+    "source": "CoolProp 8.0.0 PropsSI('D'/'V', 'T', 293.15, 'P', 1e5, 'Water'), run once in lemma-core"
+  },
+  "material": {
+    "key": "stainless_drawn",
+    "roughness_m": 1.524e-06,
+    "source": "Crane TP-410 A-23, drawn tubing 0.000005 ft"
+  },
+  "k_overrides": {},
+  "mdot_kg_s": 0.1,
+  "segments": [
+    {
+      "component_id": "comp_0",
+      "type": "pipe",
+      "d_m": 0.012,
+      "length_m": 0.2,
+      "expected_dp_pa": 200.666
+    },
+    {
+      "component_id": "comp_1",
+      "type": "bend",
+      "d_m": 0.012,
+      "length_m": 0.03769911184307752,
+      "angle_deg": 90,
+      "r_over_d": 2.0,
+      "expected_k": 0.15052,
+      "expected_dp_pa": 58.9441
+    },
+    {
+      "component_id": "comp_2",
+      "type": "pipe",
+      "d_m": 0.012,
+      "length_m": 0.2,
+      "expected_dp_pa": 200.666
+    }
+  ],
+  "expected_total_dp_pa": 460.276
+}

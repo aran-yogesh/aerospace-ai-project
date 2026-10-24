@@ -1,8 +1,23 @@
-# Reference fluid properties. Bump `version` on any change.
-version: "2026.10.0"
-entries:
-  water_20c:
-    name: Water
-    temperature_c: 20
-    density_kg_m3: 998.2
-    dynamic_viscosity_pa_s: 0.0010016
+# Fluids. Bump `version` on any change; datasets record it. Validated on startup.
+# coolprop: liquid-phase properties from CoolProp at the user's T and P; the valid
+#   temperature range is CoolProp's triple point to critical point.
+# tables: density/viscosity vs temperature, linearly interpolated, refused outside range.
+version: "2026.10.1"
+coolprop:
+  Water: REFERENCE
+  Oxygen: CRYOGENIC
+  Nitrogen: CRYOGENIC
+  Hydrogen: CRYOGENIC
+  Methane: CRYOGENIC
+tables:
+  RP-1:
+    group: PROPELLANT
+    status: unverified
+    source: "Approximate, after Huber et al., Energy & Fuels 23 (2009) RP-1 surrogate model, 0.1 MPa; unverified"
+    points:
+      - {t_k: 250.0, density_kg_m3: 837.0, viscosity_pa_s: 4.6e-3}
+      - {t_k: 270.0, density_kg_m3: 822.0, viscosity_pa_s: 3.0e-3}
+      - {t_k: 290.0, density_kg_m3: 808.0, viscosity_pa_s: 2.15e-3}
+      - {t_k: 310.0, density_kg_m3: 794.0, viscosity_pa_s: 1.6e-3}
+      - {t_k: 330.0, density_kg_m3: 779.0, viscosity_pa_s: 1.25e-3}
+      - {t_k: 350.0, density_kg_m3: 765.0, viscosity_pa_s: 1.0e-3}

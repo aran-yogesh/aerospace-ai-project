@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Box, Maximize, PanelTop, Scissors, Square } from 'lucide-react'
+import { Box, Gauge, Maximize, PanelTop, Scissors, Square } from 'lucide-react'
 import { Callout } from '@/components/ui/callout'
 import { cn } from '@/lib/utils'
 import { CadViewer, type CadViewerApi, type ScreenAnchor } from './CadViewer'
@@ -18,6 +18,12 @@ export interface Viewer3DProps {
   /** Receives the viewer API once the model is loaded (null on unmount). */
   onReady?: (api: CadViewerApi | null) => void
   onError?: (err: Error) => void
+  /** Fill colors by component id, as token names (see CadViewerApi.colorBy). */
+  colorMap?: Readonly<Record<string, string>> | null
+  /** The PRESSURE toolbar toggle; omitted hides the button. */
+  pressure?: { on: boolean; onToggle: () => void; disabled?: boolean }
+  /** Overlays drawn over the canvas (e.g. the pressure legend). */
+  children?: React.ReactNode
   className?: string
 }
 
@@ -32,11 +38,15 @@ function ToolButton({
   label,
   onClick,
   pressed,
+  disabled,
+  title,
   children
 }: {
   label: string
   onClick: () => void
   pressed?: boolean
+  disabled?: boolean
+  title?: string
   children: React.ReactNode
 }): React.JSX.Element {
   return (
@@ -44,12 +54,14 @@ function ToolButton({
       type="button"
       onClick={onClick}
       aria-pressed={pressed}
+      disabled={disabled}
+      title={title}
       data-testid={`viewer-tool-${label.toLowerCase()}`}
       className={cn(
         // Callout box, without the accent marker (orange is reserved for selection).
         'inline-flex h-6 items-center gap-1.5 border bg-bg px-2 mono-label text-text-muted',
         'transition-colors duration-120 ease-out hover:text-text',
-        '[&_svg]:size-3.5 [&_svg]:shrink-0',
+        '[&_svg]:size-3.5 [&_svg]:shrink-0 disabled:pointer-events-none disabled:opacity-40',
         pressed ? 'border-text text-text' : 'border-border hover:border-text-muted'
       )}
     >
@@ -73,6 +85,9 @@ export function Viewer3D({
   calloutText,
   onReady,
   onError,
+  colorMap,
+  pressure,
+  children,
   className
 }: Viewer3DProps): React.JSX.Element {
   const hostRef = useRef<HTMLDivElement>(null)
@@ -115,6 +130,7 @@ export function Viewer3D({
   useEffect(() => viewerRef.current?.select(selectedId), [selectedId, shapes])
   useEffect(() => viewerRef.current?.highlight(hoveredId), [hoveredId, shapes])
   useEffect(() => viewerRef.current?.setSection(section), [section, shapes])
+  useEffect(() => viewerRef.current?.colorBy(colorMap ?? null), [colorMap, shapes])
 
   const text = selectedId ? calloutText(selectedId) : null
 
@@ -211,7 +227,19 @@ export function Viewer3D({
         <ToolButton label="Section" onClick={() => setSection((s) => !s)} pressed={section}>
           <Scissors strokeWidth={1.5} />
         </ToolButton>
+        {pressure ? (
+          <ToolButton
+            label="Pressure"
+            onClick={pressure.onToggle}
+            pressed={pressure.on}
+            disabled={pressure.disabled}
+            title={pressure.disabled ? 'Available after a solve' : 'Color parts by pressure drop'}
+          >
+            <Gauge strokeWidth={1.5} />
+          </ToolButton>
+        ) : null}
       </div>
+      {children}
     </div>
   )
 }

@@ -8,7 +8,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
 
-from app.api import files, health, parse_jobs, projects
+from app.api import files, health, parse_jobs, projects, solve
+from app.constants import get_constants
 from app.core.config import get_settings
 from app.core.errors import install_error_handlers
 from app.ws import echo
@@ -30,6 +31,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    get_constants()  # refuse to start on an invalid constants file
     app = FastAPI(title="LemmaLab Core", version="0.1.0", lifespan=lifespan)
     install_error_handlers(app)
     app.add_middleware(
@@ -44,6 +46,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(projects.router)
     app.include_router(files.router)
+    app.include_router(solve.router)
     app.include_router(echo.router)
     app.include_router(ws_files.router)
     return app

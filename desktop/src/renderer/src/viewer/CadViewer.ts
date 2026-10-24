@@ -29,7 +29,7 @@ import { LineMaterial } from 'three/addons/lines/LineMaterial.js'
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js'
 import { decodeShapes, type MeshShapes } from './shapes'
-import { readPalette, type ViewerPalette, type ViewerTheme } from './theme'
+import { readPalette, WHITE, type ViewerPalette, type ViewerTheme } from './theme'
 
 export type ViewDirection = 'iso' | 'top' | 'front'
 
@@ -44,7 +44,10 @@ export interface CadViewerApi {
   /** Fit the camera to one component, or to the whole model. */
   fitTo(id?: string): void
   setTheme(mode: ViewerTheme): void
-  /** Phase 2: per-component fill colors (e.g. pressure). Stored, not rendered yet. */
+  /**
+   * Per-component fill colors as token names (e.g. "--pressure-3"); null clears. Parts
+   * missing from the map keep the model gray. Selection still wins over coloring.
+   */
   colorBy(map: Readonly<Record<string, string>> | null): void
   /** User picked a component in the canvas (null = clicked empty space). Returns unsubscribe. */
   onSelect(cb: (id: string | null) => void): () => void
@@ -84,6 +87,8 @@ const DIRECTIONS: Record<ViewDirection, Vector3> = {
 const FIT_PADDING = 1.12
 /** Room around a single fitted component for its callout and some context. */
 const FIT_PADDING_COMPONENT = 2.4
+/** Height of the toolbar overlay at the top of the viewer; fits keep the model below it. */
+const TOOLBAR_RESERVE_PX = 44
 const CLICK_SLOP_PX = 4
 
 export class CadViewer implements CadViewerApi {
@@ -284,8 +289,8 @@ export class CadViewer implements CadViewerApi {
   }
 
   colorBy(map: Readonly<Record<string, string>> | null): void {
-    // Phase 2 (solver results). Kept so callers can be written against the final API.
     this.colorMap = map
+    this.applyStyles()
   }
 
   onSelect(cb: (id: string | null) => void): () => void {
@@ -429,10 +434,13 @@ export class CadViewer implements CadViewerApi {
       minX = minY = -sceneR
       maxX = maxY = sceneR
     }
-    const aspect = this.width / this.height
+    const usable = Math.max(this.height - TOOLBAR_RESERVE_PX, this.height / 2)
+    const aspect = this.width / usable
     const halfW = Math.max((maxX - minX) / 2, 1e-6)
     const halfH = Math.max((maxY - minY) / 2, 1e-6)
-    this.halfHeight = Math.max(halfH, halfW / aspect) * padding
+    this.halfHeight = (Math.max(halfH, halfW / aspect) * padding * this.height) / usable
+    // World units the view must move up so the model centers in the area under the toolbar.
+    const toolbarShift = ((this.height - usable) * this.halfHeight) / this.height
 
     // Shift the target so the on-screen extent is centered.
     const right = new Vector3().setFromMatrixColumn(this.camera.matrixWorld, 0)
@@ -440,7 +448,7 @@ export class CadViewer implements CadViewerApi {
     const target = center
       .clone()
       .addScaledVector(right, (minX + maxX) / 2)
-      .addScaledVector(up, (minY + maxY) / 2)
+      .addScaledVector(up, (minY + maxY) / 2 + toolbarShift)
     this.controls.target.copy(target)
     this.camera.position.copy(target).addScaledVector(direction, distance)
     this.camera.near = 0
@@ -456,13 +464,16 @@ export class CadViewer implements CadViewerApi {
     for (const comp of this.components.values()) {
       const isSelected = comp.id === this.selected
       const isHovered = !isSelected && comp.id === this.hovered
-      comp.fill.color.copy(isSelected ? p.selected : isHovered ? p.hover : p.model)
+      const token = this.colorMap?.[comp.id]
+      const base = (token ? p.pressure[token] : undefined) ?? p.model
+      if (isSelected) comp.fill.color.copy(p.selected)
+      else if (isHovered) comp.fill.color.copy(base).lerp(WHITE, p.hoverLift)
+      else comp.fill.color.copy(base)
       comp.edge.color.copy(isSelected ? p.selectedEdge : p.edge)
       comp.edge.opacity = isSelected ? p.selectedEdgeOpacity : p.edgeOpacity
       // Selected edges draw over neighbours so the accent outline stays continuous.
       for (const line of comp.lines) line.renderOrder = isSelected ? 2 : 1
     }
-    void this.colorMap
     this.dirty = true
   }
 

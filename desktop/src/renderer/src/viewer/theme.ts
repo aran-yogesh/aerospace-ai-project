@@ -8,13 +8,16 @@ export interface ViewerPalette {
   model: ThreeColor
   edge: ThreeColor
   edgeOpacity: number
-  hover: ThreeColor
+  /** Hover moves the fill this far toward white. */
+  hoverLift: number
   selected: ThreeColor
   selectedEdge: ThreeColor
   selectedEdgeOpacity: number
+  /** Token name ("--pressure-3") -> fill, for colorBy. */
+  pressure: Record<string, ThreeColor>
 }
 
-const WHITE = new ThreeColor(1, 1, 1)
+export const WHITE = new ThreeColor(1, 1, 1)
 
 function num(raw: string, fallback: number): number {
   const v = Number.parseFloat(raw)
@@ -42,14 +45,18 @@ export function readPalette(host: HTMLElement, mode: ViewerTheme): ViewerPalette
 
   const model = parse(v('--viewer-model'))
   const accent = parse(v('--accent'))
+  const hoverLift = num(v('--viewer-hover-lift'), 0.15)
   const palette: ViewerPalette = {
     model,
+    hoverLift,
     edge: parse(v('--viewer-edge')),
     edgeOpacity: num(v('--viewer-edge-opacity'), 0.6),
-    hover: model.clone().lerp(WHITE, num(v('--viewer-hover-lift'), 0.15)),
     selected: model.clone().lerp(accent, num(v('--viewer-selected-mix'), 0.85)),
     selectedEdge: parse(v('--viewer-selected-edge') || v('--accent')),
-    selectedEdgeOpacity: num(v('--viewer-selected-edge-opacity'), 1)
+    selectedEdgeOpacity: num(v('--viewer-selected-edge-opacity'), 1),
+    pressure: Object.fromEntries(
+      [1, 2, 3, 4, 5].map((i) => [`--pressure-${i}`, parse(v(`--pressure-${i}`))])
+    )
   }
   probe.remove()
   return palette

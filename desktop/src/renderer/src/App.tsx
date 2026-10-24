@@ -14,6 +14,7 @@ import { api, ApiError } from '@/lib/api'
 import { errorTitle } from '@/lib/format'
 import { ProjectsScreen } from '@/screens/ProjectsScreen'
 import { WorkspaceScreen, type ParserStatus } from '@/screens/WorkspaceScreen'
+import { UnitsProvider } from '@/lib/units'
 import { ThemeProvider } from '@/theme/ThemeProvider'
 
 const queryClient = new QueryClient({
@@ -64,6 +65,7 @@ function Shell(): React.JSX.Element {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [newOpen, setNewOpen] = useState(false)
   const [parser, setParser] = useState<ParserStatus | null>(null)
+  const [dataset, setDataset] = useState<ParserStatus | null>(null)
   const health = useBackendHealth()
 
   const goHome = (): void => navigate('/')
@@ -110,14 +112,25 @@ function Shell(): React.JSX.Element {
       />
     )
   } else {
-    body = <WorkspaceScreen key={project.id} project={project} onParserStatus={setParser} />
+    body = (
+      <WorkspaceScreen
+        key={project.id}
+        project={project}
+        onParserStatus={setParser}
+        onDatasetStatus={setDataset}
+      />
+    )
   }
 
   return (
     <div className="flex h-full flex-col bg-bg text-text">
       <TopBar crumbs={crumbs} onOpenSettings={() => setSettingsOpen(true)} />
       {body}
-      <StatusBar status={health} parser={projectId ? parser : null} />
+      <StatusBar
+        status={health}
+        parser={projectId ? parser : null}
+        dataset={projectId ? dataset : null}
+      />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       <NewProjectDialog
         open={newOpen}
@@ -132,9 +145,11 @@ export function App(): React.JSX.Element {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <Shell />
-        </TooltipProvider>
+        <UnitsProvider>
+          <TooltipProvider>
+            <Shell />
+          </TooltipProvider>
+        </UnitsProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

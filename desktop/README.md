@@ -21,6 +21,10 @@ npm run phase1           # Phase 1 end-to-end against the real backend (`make up
                          # uploads every evals/golden/*.step through the UI, checks component counts,
                          # shoots ../docs/screenshots/phase1/*.png and runs the console/CSP audit
 npm run phase1:dev       # same against the Vite dev server (add `-- --no-shots` to skip screenshots)
+npm run phase2           # Phase 2 end-to-end (setup, confirm, solve, plot, pressure, stale, errors):
+                         # shoots ../docs/screenshots/phase2/*.png and runs the console/CSP audit.
+                         # Use `make e2e` (isolated backend + throwaway DB), never the dev database.
+npm run phase2:dev       # same against the Vite dev server
 ```
 
 `phase1` creates projects named `Test · …`. The API has no delete endpoint yet, so remove

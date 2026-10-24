@@ -120,7 +120,12 @@ export async function launch(devMode: boolean): Promise<Session> {
   env['LEMMA_AUTOMATION'] = '1'
   if (dev) env['ELECTRON_RENDERER_URL'] = dev.url
 
-  const app = await electron.launch({ args: [mainEntry], cwd: desktop, env })
+  // Fixed 1x so screenshots are 1440x900 on every display (Retina would give 2x).
+  const app = await electron.launch({
+    args: ['--force-device-scale-factor=1', mainEntry],
+    cwd: desktop,
+    env
+  })
   const entries: ConsoleEntry[] = []
   captureMainStdout(app, entries)
   const pageErrors: string[] = []

@@ -1,12 +1,14 @@
-import { Fragment, useEffect, useMemo, useRef } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { TriangleAlert } from 'lucide-react'
-import { PanelHeader } from '@/components/ui/panel-header'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { componentDims, orderedComponents, TYPE_LABEL } from '@/lib/format'
+import { useUnits } from '@/lib/units'
 import { cn } from '@/lib/utils'
 import type { Component, SystemGraph } from '@/types/geometry'
 import { ComponentGlyph } from '@/workspace/ComponentGlyph'
 import { useWorkspace } from '@/workspace/WorkspaceContext'
 import { deriveWarnings, type GraphWarning } from '@/workspace/warnings'
+import { SetupTab } from './SetupTab'
 
 const SEGMENTS = 5
 
@@ -64,6 +66,7 @@ function WarningsBlock({ warnings }: { warnings: GraphWarning[] }): React.JSX.El
 }
 
 function Row({ c }: { c: Component }): React.JSX.Element {
+  const u = useUnits()
   const { selectedId, hoveredId, select, hover } = useWorkspace()
   const ref = useRef<HTMLButtonElement>(null)
   const selected = selectedId === c.id
@@ -98,7 +101,7 @@ function Row({ c }: { c: Component }): React.JSX.Element {
         <ComponentGlyph type={c.type} className={selected ? 'text-text' : undefined} />
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="mono-label text-text">{TYPE_LABEL[c.type]}</span>
-          <span className="truncate num text-label text-text-muted">{componentDims(c)}</span>
+          <span className="truncate num text-label text-text-muted">{componentDims(c, u)}</span>
         </span>
         <ConfidenceBar value={c.confidence} />
       </button>
@@ -114,6 +117,9 @@ function Empty({ text }: { text: string }): React.JSX.Element {
   )
 }
 
+type LeftTab = 'components' | 'setup'
+
+/** Left pane: COMPONENTS | SETUP tabs. */
 export function ComponentsPane({
   graph,
   emptyText
@@ -122,51 +128,65 @@ export function ComponentsPane({
   /** Shown while there is no graph (no file yet, parsing, failed). */
   emptyText: string
 }): React.JSX.Element {
+  const [tab, setTab] = useState<LeftTab>('components')
   const components = useMemo(() => (graph ? orderedComponents(graph) : []), [graph])
   const warnings = useMemo(() => (graph ? deriveWarnings(graph) : []), [graph])
   const grouped = graph !== null && !(graph.topology === 'line' && graph.ordered_path)
 
   return (
-    <section aria-label="Components" className="flex h-full flex-col bg-surface">
-      <PanelHeader
-        label={
-          graph ? (
+    <Tabs
+      value={tab}
+      onValueChange={(v) => setTab(v as LeftTab)}
+      className="flex h-full flex-col bg-surface"
+    >
+      <TabsList aria-label="Left pane">
+        <TabsTrigger value="components" data-testid="tab-components">
+          Components
+          {graph ? (
             <>
-              Components <span className="text-text-muted">·</span>{' '}
+              <span className="px-1 text-text-muted">·</span>
               <span className="tabular-nums" data-testid="component-count">
                 {graph.components.length}
               </span>
             </>
+          ) : null}
+        </TabsTrigger>
+        <TabsTrigger value="setup" data-testid="tab-setup">
+          Setup
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="components" className="flex flex-col data-[state=inactive]:hidden">
+        <section aria-label="Components" className="flex min-h-0 flex-1 flex-col">
+          {graph ? (
+            <>
+              {warnings.length > 0 ? <WarningsBlock warnings={warnings} /> : null}
+              <ul className="min-h-0 flex-1 overflow-auto py-1" data-testid="component-list">
+                {components.map((c, i) => {
+                  const header = grouped && (i === 0 || components[i - 1]?.type !== c.type)
+                  return (
+                    <Fragment key={c.id}>
+                      {header ? (
+                        <li
+                          aria-hidden
+                          className="px-3 pt-2 pb-1 mono-label text-text-muted first:pt-1"
+                        >
+                          {TYPE_LABEL[c.type]}
+                        </li>
+                      ) : null}
+                      <Row c={c} />
+                    </Fragment>
+                  )
+                })}
+              </ul>
+            </>
           ) : (
-            'Components'
-          )
-        }
-      />
-      {graph ? (
-        <>
-          {warnings.length > 0 ? <WarningsBlock warnings={warnings} /> : null}
-          <ul className="min-h-0 flex-1 overflow-auto py-1" data-testid="component-list">
-            {components.map((c, i) => {
-              const header = grouped && (i === 0 || components[i - 1]?.type !== c.type)
-              return (
-                <Fragment key={c.id}>
-                  {header ? (
-                    <li
-                      aria-hidden
-                      className="px-3 pt-2 pb-1 mono-label text-text-muted first:pt-1"
-                    >
-                      {TYPE_LABEL[c.type]}
-                    </li>
-                  ) : null}
-                  <Row c={c} />
-                </Fragment>
-              )
-            })}
-          </ul>
-        </>
-      ) : (
-        <Empty text={emptyText} />
-      )}
-    </section>
+            <Empty text={emptyText} />
+          )}
+        </section>
+      </TabsContent>
+      <TabsContent value="setup" className="flex flex-col data-[state=inactive]:hidden">
+        {graph ? <SetupTab /> : <Empty text="Setup is available once a model is parsed." />}
+      </TabsContent>
+    </Tabs>
   )
 }
