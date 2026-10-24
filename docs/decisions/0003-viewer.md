@@ -79,7 +79,7 @@ select(id: string | null): void         // selected look, visual only
 clearSelection(): void
 fitTo(id?: string): void                // one component, or the whole model
 setTheme(mode: 'light' | 'dark'): void  // re-reads the tokens
-colorBy(map: Record<string, string> | null): void   // Phase 2 stub (stored, not drawn)
+colorBy(map: Record<string, string> | null): void   // component id -> --pressure-N token (Phase 2)
 onSelect(cb: (id: string | null) => void): () => void  // canvas pick; null = empty space
 onHover(cb: (id: string | null) => void): () => void
 ```

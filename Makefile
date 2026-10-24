@@ -56,7 +56,9 @@ e2e-down: ## Stop the e2e backend and drop lemma_e2e
 
 e2e: e2e-up ## Playwright e2e + console/CSP audit (prod and dev) on an isolated backend
 	cd desktop && VITE_API_URL=$(E2E_API) npm run build && VITE_API_URL=$(E2E_API) npm run phase1 \
-	  && VITE_API_URL=$(E2E_API) npm run phase1:dev -- --no-shots; \
+	  && VITE_API_URL=$(E2E_API) npm run phase1:dev -- --no-shots \
+	  && VITE_API_URL=$(E2E_API) npm run phase2 \
+	  && VITE_API_URL=$(E2E_API) npm run phase2:dev -- --no-shots; \
 	  status=$$?; cd .. && $(MAKE) e2e-down && cd desktop && npm run build >/dev/null; exit $$status
 
 migrate: .env ## Apply Alembic migrations (starts Postgres if needed)

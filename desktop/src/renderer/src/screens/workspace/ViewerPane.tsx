@@ -2,11 +2,15 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { Callout } from '@/components/ui/callout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { calloutText } from '@/lib/format'
+import { useUnits } from '@/lib/units'
 import { useTheme } from '@/theme/useTheme'
 import type { SystemGraph } from '@/types/geometry'
 import { Viewer3D, type MeshShapes } from '@/viewer'
+import { useSolve } from '@/workspace/SolveContext'
 import { useWorkspace } from '@/workspace/WorkspaceContext'
+import { DpPlot } from './DpPlot'
 import { DropzoneStage } from './DropzoneStage'
+import { PressureLegend } from './PressureLegend'
 import { SchematicView } from './SchematicView'
 import { FailedStage, ParsingStage, UploadingStage } from './ViewerStages'
 
@@ -45,15 +49,18 @@ function ModelView({
   onViewerError: (err: Error) => void
 }): React.JSX.Element {
   const { resolved } = useTheme()
+  const u = useUnits()
   const { selectedId, hoveredId, select, hover, registerViewer } = useWorkspace()
+  const { bins, pressureOn, setPressureOn } = useSolve()
   const byId = useMemo(() => new Map(graph.components.map((c) => [c.id, c])), [graph])
   const text = useCallback(
     (id: string) => {
       const c = byId.get(id)
-      return c ? calloutText(c) : null
+      return c ? calloutText(c, u) : null
     },
-    [byId]
+    [byId, u]
   )
+  const coloring = pressureOn && bins !== null
   return (
     <Viewer3D
       shapes={mesh}
@@ -65,7 +72,32 @@ function ModelView({
       calloutText={text}
       onReady={registerViewer}
       onError={onViewerError}
-    />
+      colorMap={coloring ? bins.colors : null}
+      pressure={{ on: coloring, onToggle: () => setPressureOn(!pressureOn), disabled: !bins }}
+    >
+      {coloring ? <PressureLegend bins={bins} /> : null}
+    </Viewer3D>
+  )
+}
+
+function DpTab(): React.JSX.Element {
+  const { run } = useSolve()
+  const result = run?.result
+  if (result?.status === 'complete') return <DpPlot result={result} />
+  return (
+    <div
+      data-testid="dp-placeholder"
+      className="flex w-[360px] flex-col items-start gap-3 border border-border bg-bg px-6 py-5"
+    >
+      <Callout variant={result ? 'danger' : 'default'}>
+        {result ? 'Solve incomplete' : 'Available after solve'}
+      </Callout>
+      <p className="text-body text-text-muted">
+        {result
+          ? 'The plot needs a complete solve. Resolve the missing loss coefficients and solve again.'
+          : 'Pressure drop along the flow path is plotted here once a solve has run.'}
+      </p>
+    </div>
   )
 }
 
@@ -206,15 +238,7 @@ export function ViewerPane({
         value="dp"
         className="halftone relative flex items-center justify-center overflow-hidden"
       >
-        <div
-          data-testid="dp-placeholder"
-          className="flex w-[360px] flex-col items-start gap-3 border border-border bg-bg px-6 py-5"
-        >
-          <Callout>Available after solve</Callout>
-          <p className="text-body text-text-muted">
-            Pressure drop along the flow path is plotted here once a solve has run.
-          </p>
-        </div>
+        <DpTab />
         {dropOverlay}
       </TabsContent>
     </Tabs>

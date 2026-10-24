@@ -13,16 +13,19 @@ const LABEL: Record<BackendStatus, string> = {
 const TONE: Record<ParserStatus['tone'], string> = {
   muted: 'text-text-muted',
   ok: 'text-text',
-  danger: 'text-danger'
+  danger: 'text-danger',
+  warning: 'text-warning'
 }
 
 /** 24px status bar: backend health and active-file parser status left, version right. */
 export function StatusBar({
   status,
-  parser
+  parser,
+  dataset
 }: {
   status: BackendStatus
   parser?: ParserStatus | null
+  dataset?: ParserStatus | null
 }): React.JSX.Element {
   return (
     <footer className="flex h-6 shrink-0 items-center justify-between gap-4 border-t border-border bg-bg px-3">
@@ -46,6 +49,19 @@ export function StatusBar({
               className={cn('truncate mono-label tabular-nums', TONE[parser.tone])}
             >
               {parser.text}
+            </span>
+          </>
+        ) : null}
+        {dataset ? (
+          <>
+            <span aria-hidden className="h-3 w-px shrink-0 bg-border" />
+            <span
+              role="status"
+              aria-live="polite"
+              data-testid="dataset-status"
+              className={cn('truncate mono-label tabular-nums', TONE[dataset.tone])}
+            >
+              {dataset.text}
             </span>
           </>
         ) : null}

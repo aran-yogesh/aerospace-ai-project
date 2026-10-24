@@ -55,11 +55,19 @@ make golden        # rebuild the synthetic files after editing generate.py
 The table is also written to `evals/golden/RESULTS.md`. Regenerated `.step` files always
 differ, because the STEP header has a timestamp, so commit them only when the geometry changes.
 
+## Solver
+
+The pressure-drop solver (`backend/app/solver/`) is pure and versioned. Every number traces to a
+formula, a constants entry with a source, or a user input. Golden solve cases with hand
+worksheets are in `evals/golden/solve/`. See ADR 0005 (solver) and ADR 0006 (dataset confirm).
+The engineering defaults awaiting review are listed in
+[docs/OPEN-QUESTIONS-ROHITH.md](docs/OPEN-QUESTIONS-ROHITH.md).
+
 ## Desktop review scripts
 
 ```bash
-make e2e   # uploads every golden file through the UI, takes the phase 1 screenshots,
-           # and audits console + CSP in the production build and the dev server
+make e2e   # phase 1: every golden file through the UI; phase 2: setup, confirm, solve,
+           # ΔP plot and pressure coloring; screenshots + console/CSP audit (prod and dev)
 ```
 
 It runs against an isolated backend on port 18001 with a throwaway database, then cleans up. `make clean-dev-data` removes any leftover

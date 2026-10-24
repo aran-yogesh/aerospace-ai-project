@@ -1,8 +1,11 @@
 import { useMemo } from 'react'
 import { Callout } from '@/components/ui/callout'
-import { orderedComponents, schematicLabel } from '@/lib/format'
+import { orderedComponents, schematicLabel, withUnit } from '@/lib/format'
+import type { SegmentResult } from '@/lib/apiTypes'
+import { useUnits } from '@/lib/units'
 import { cn } from '@/lib/utils'
 import type { Component, SystemGraph } from '@/types/geometry'
+import { useSolve } from '@/workspace/SolveContext'
 import { useWorkspace } from '@/workspace/WorkspaceContext'
 
 const CELL = 96
@@ -10,6 +13,7 @@ const PAD_X = 56
 const TOP = 40
 const MID = 64 // y of the flow line
 const HEIGHT = 136
+const HEIGHT_SOLVED = 160 // room for the ΔP line
 
 /** One symbol, centered at cx on the flow line. Lines run to the cell edges. */
 function Symbol({ c, x }: { c: Component; x: number }): React.JSX.Element {
@@ -62,12 +66,24 @@ function Symbol({ c, x }: { c: Component; x: number }): React.JSX.Element {
   }
 }
 
-function Cell({ c, index }: { c: Component; index: number }): React.JSX.Element {
+function Cell({
+  c,
+  index,
+  seg,
+  height
+}: {
+  c: Component
+  index: number
+  /** This component's solve result, when a solve has run. */
+  seg: SegmentResult | undefined
+  height: number
+}): React.JSX.Element {
+  const u = useUnits()
   const { selectedId, hoveredId, select, hover } = useWorkspace()
   const x = PAD_X + index * CELL
   const selected = selectedId === c.id
   const hovered = hoveredId === c.id
-  const [kind, dim] = schematicLabel(c)
+  const [kind, dim] = schematicLabel(c, u)
   return (
     <g
       data-testid="schematic-cell"
@@ -84,7 +100,7 @@ function Cell({ c, index }: { c: Component; index: number }): React.JSX.Element 
         x={x}
         y={TOP - 28}
         width={CELL}
-        height={HEIGHT - TOP + 28}
+        height={height - TOP + 28}
         className={cn(
           'transition-colors duration-120 ease-out',
           hovered && !selected ? 'fill-surface-raised' : 'fill-transparent'
@@ -119,6 +135,17 @@ function Cell({ c, index }: { c: Component; index: number }): React.JSX.Element 
       >
         {dim}
       </text>
+      {seg ? (
+        <text
+          x={x + CELL / 2}
+          y={MID + 76}
+          textAnchor="middle"
+          data-testid="schematic-dp"
+          className={cn('num text-label', selected ? 'fill-accent' : 'fill-text')}
+        >
+          ΔP {withUnit('pressure', seg.dp_pa, u)}
+        </text>
+      ) : null}
     </g>
   )
 }
@@ -134,6 +161,12 @@ function Message({ title, text }: { title: string; text: string }): React.JSX.El
 
 export function SchematicView({ graph }: { graph: SystemGraph | null }): React.JSX.Element {
   const components = useMemo(() => (graph ? orderedComponents(graph) : []), [graph])
+  const { run } = useSolve()
+  const segs = useMemo(
+    () => new Map((run?.result.segments ?? []).map((s) => [s.component_id, s])),
+    [run]
+  )
+  const height = run ? HEIGHT_SOLVED : HEIGHT
 
   if (!graph) {
     return <Message title="Schematic" text="The schematic appears once a model is parsed." />
@@ -154,8 +187,8 @@ export function SchematicView({ graph }: { graph: SystemGraph | null }): React.J
     <div className="flex max-w-full overflow-x-auto px-6 py-px" data-testid="schematic">
       <svg
         width={width}
-        height={HEIGHT}
-        viewBox={`0 0 ${width} ${HEIGHT}`}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
         className="shrink-0 border border-border bg-bg"
         shapeRendering="geometricPrecision"
       >
@@ -175,7 +208,7 @@ export function SchematicView({ graph }: { graph: SystemGraph | null }): React.J
           Out
         </text>
         {components.map((c, i) => (
-          <Cell key={c.id} c={c} index={i} />
+          <Cell key={c.id} c={c} index={i} seg={segs.get(c.id)} height={height} />
         ))}
       </svg>
     </div>
