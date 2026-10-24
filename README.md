@@ -57,12 +57,10 @@ differ, because the STEP header has a timestamp, so commit them only when the ge
 
 ## Desktop review scripts
 
-With the backend up, from `desktop/`:
-
 ```bash
-npm run build && npm run phase1   # uploads every golden file through the UI, takes the
-                                  # phase 1 screenshots, audits console + CSP (prod)
-npm run phase1:dev -- --no-shots  # same audit against the dev server
+make e2e   # uploads every golden file through the UI, takes the phase 1 screenshots,
+           # and audits console + CSP in the production build and the dev server
 ```
 
-These scripts create projects named `Test · ...` in the dev database.
+It runs against an isolated backend on port 18001 with a throwaway database, then cleans up. `make clean-dev-data` removes any leftover
+`Test · ...` projects from the dev database.

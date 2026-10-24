@@ -34,47 +34,33 @@ def _clear_caches() -> None:
 
 @pytest.fixture(scope="session")
 def api_db() -> Iterator[None]:
-    """Point the app at a separate <db>_test database, created and migrated with Alembic
-    once per session, so `make test` never touches dev data."""
-    from alembic.config import Config
-    from sqlalchemy import create_engine, text
-    from sqlalchemy.engine import make_url
-
-    from alembic import command
+    """Point the app at a separate <db>_test database, created fresh and migrated at the
+    start of the session and dropped at the end, so `make test` never touches dev data."""
+    from scripts import testdb
 
     original = os.environ.get("DATABASE_URL", "")
     if not original:
         pytest.skip("DATABASE_URL not set")
-    url = make_url(original)
-    test_url = url if url.database.endswith("_test") else url.set(database=f"{url.database}_test")
-
-    admin = create_engine(url, isolation_level="AUTOCOMMIT")
-    with admin.connect() as conn:
-        exists = conn.execute(
-            text("SELECT 1 FROM pg_database WHERE datname = :n"), {"n": test_url.database}
-        ).scalar()
-        if not exists:
-            conn.execute(text(f'CREATE DATABASE "{test_url.database}"'))
-    admin.dispose()
-
-    os.environ["DATABASE_URL"] = test_url.render_as_string(hide_password=False)
+    os.environ["DATABASE_URL"] = testdb.create("test")
     _clear_caches()
-    command.upgrade(Config(str(Path(__file__).resolve().parents[1] / "alembic.ini")), "head")
     yield
     from app.db.session import get_engine
 
     get_engine().dispose()
     os.environ["DATABASE_URL"] = original
     _clear_caches()
+    testdb.drop("test")
 
 
 def truncate_all() -> None:
     from sqlalchemy import text
 
+    from app.db import Base
     from app.db.session import get_engine
 
+    tables = ", ".join(Base.metadata.tables)  # every app table, so new ones are covered too
     with get_engine().begin() as conn:
-        conn.execute(text("TRUNCATE system_graphs, cad_files, projects"))
+        conn.execute(text(f"TRUNCATE {tables} CASCADE"))
 
 
 @pytest.fixture

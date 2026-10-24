@@ -139,15 +139,17 @@ npm run typecheck
 npm run build      # typecheck, then build the production app into out/
 ```
 
-Optional end-to-end UI check (backend must be up). It uploads every golden file through the
-real app and takes the review screenshots:
+Optional end-to-end UI check. It uploads every golden file through the real app and takes the
+review screenshots:
 
 ```bash
-cd desktop
-npm run build && npm run phase1
+make e2e
 ```
 
-This creates projects named `Test · ...` in your local database.
+This starts a separate backend on port 18001 (`E2E_PORT` to change it) with its own fresh
+`lemma_e2e` database, runs the Playwright flow, then drops the database. Your dev data is never
+touched. `make test` likewise uses a throwaway `lemma_test` database. If old `Test · ...`
+projects show up in the app, remove them with `make clean-dev-data`.
 
 ---
 
@@ -188,8 +190,12 @@ Make sure Docker has at least 4 GB RAM and enough disk (Docker Desktop → Setti
 To retry from a clean cache: `docker compose build --no-cache lemma-core`.
 
 **Port already in use (8000, 5433 or 5173)**
-Something else is using it. Find it with `lsof -nP -iTCP:8000 -sTCP:LISTEN`. If Vite finds 5173
-busy, it moves to 5174 on its own, and the backend accepts any localhost port in local mode.
+Something else is using it. Find it with `lsof -nP -iTCP:5433 -sTCP:LISTEN`.
+
+- For Postgres, set `POSTGRES_HOST_PORT=5434` in `.env` (and use the same port in
+  `DATABASE_URL`), then run `make up`.
+- If Vite finds 5173 busy, it moves to 5174 on its own, and the backend accepts any localhost
+  port in local mode.
 
 **The status bar says BACKEND OFFLINE**
 Check that `curl localhost:8000/health` returns `"db":"ok"`. If it returns `"db":"down"`,
